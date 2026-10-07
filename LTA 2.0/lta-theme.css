@@ -1,0 +1,269 @@
+/* LTA 2.0 shared theme. Overview is the visual reference for every page. */
+:root {
+  --teal-50:#E9F5F5; --teal-100:#CDE9E9; --teal-200:#A3D7D8;
+  --teal-300:#76BEC0; --teal-400:#459FA3; --teal-500:#16868C;
+  --teal-600:#00747A; --teal-700:#005F64; --teal-800:#084C50; --teal-900:#0A393C;
+  --chrome-bg:#fff; --chrome-bd:#E2E7EA; --chrome-ink:#51616B; --chrome-ink-sub:#51616B;
+  --role-co:#2B4E77; --role-ss:#2B4E77; --role-eng:#2B4E77;
+  --st-appr-bg:#EEF2F8; --st-appr-ink:#1B365D;
+  --st-done-bg:#EAF5EE; --st-done-ink:#0F5C37;
+  --danger-600:#A93A32; --danger-700:#8F2D2B;
+}
+body {background:var(--grey-50);color:var(--grey-700);line-height:1.5}
+:focus-visible {outline-offset:4px}
+.sidebar {background:#fff;border-color:var(--grey-200)}
+.sb-brand {padding:6px 8px;border-bottom:0}
+.sb-foot {gap:8px}
+.sb-foot .rolesw {margin-top:0}
+.sidebar .nav-item {color:var(--grey-600)}
+.sidebar .nav-item .nav-ico {color:var(--grey-400)}
+.sidebar .nav-item:hover {background:var(--grey-100);color:var(--grey-800)}
+.sidebar .nav-item.active,
+.sidebar .nav-group>.nav-item.active:not(:hover) {background:var(--teal-50);color:var(--teal-700);font-weight:700}
+.sidebar .nav-item.active .nav-ico {color:var(--teal-600)}
+.sidebar .nav-item.sub.current {background:var(--teal-50);color:var(--teal-700);box-shadow:none}
+.sb-badge {background:#A93A32;border-radius:999px}
+.rolesw-trg {padding:8px;gap:8px}
+.rolesw-trg:hover {background:var(--grey-100);border-color:var(--grey-200)}
+.rolesw-trg .rs-meta {flex:1;min-width:0;line-height:1.35}
+.rolesw-trg .rs-meta strong {font-size:13px}
+.rolesw-trg .rs-meta span {font-size:11px;color:var(--grey-600)}
+.rolesw-menu {border-radius:14px}
+.rolesw.open .rolesw-trg {border-color:var(--teal-600);box-shadow:none}
+.main {padding:0;min-width:0;transition:margin-left .2s ease}
+.page-head {padding:24px 32px 16px;margin:0;background:#fff;align-items:flex-start}
+.page-sub {margin-top:4px;font-size:14px;line-height:1.5;color:var(--grey-500);max-width:none}
+.wi-tabs {position:sticky;top:0;z-index:20;flex-shrink:0;gap:4px;margin:0;padding:12px 32px;background:#fff;border-bottom:1px solid var(--grey-200)}
+.wi-tab {padding:8px 12px;font-size:14px;font-weight:500;white-space:nowrap;line-height:1.5}
+.wi-tab.active {background:var(--teal-600);font-weight:600}
+.wi-tab:hover:not(.active) {background:var(--teal-50);color:var(--teal-700)}
+.wi-content {padding:24px 32px;min-width:0}
+.list-toolbar {margin-bottom:16px}
+.search-box {padding-left:16px;border-color:var(--grey-300)}
+.search-box input {min-width:0}
+.btn-primary {background:var(--teal-600)}
+.btn-primary:hover {background:var(--teal-700)}
+.table-wrap,.wi-card {border-color:var(--grey-200);border-radius:14px;box-shadow:none}
+.wi-table th {background:var(--grey-50)}
+.wi-table tbody tr.zebra,.wi-table.show-act tbody tr.zebra td.act-col {background-color:var(--grey-50)}
+.wi-table tbody tr:hover td,.wi-table tbody tr:focus-within td {background-image:linear-gradient(#00747A0D,#00747A0D)}
+.wi-num,.wi-card .num {color:var(--teal-700)}
+.chip {line-height:1.5}
+.fd-chip.on:not(.st-draft):not(.st-wip):not(.st-ver):not(.st-appr):not(.st-closed) {background:var(--teal-50)}
+.page-foot {border-top:0}
+@media(min-width:1021px) {
+  body.nav-collapsed .sb-foot .rolesw-trg {border:none}
+}
+@media(max-width:1020px) {
+  .main {padding:72px 0 0}
+  .page-head {padding:16px 16px 16px}
+  .wi-tabs {top:72px;padding:12px 16px}
+  .wi-content {padding:24px 16px}
+  .topbar {background:#fff}
+}
+@media(max-width:640px) {
+  .page-head {align-items:flex-start}
+  .page-sub {font-size:13px}
+}
+@media(prefers-reduced-motion:reduce) {.main{transition:none}}
+
+/* Detail pages retain their workflow structure inside the common shell. */
+.sidebar .nav-item .ni-ico svg {color:var(--grey-400)}
+.sidebar .nav-item.active .ni-ico svg {color:var(--teal-600)}
+.sidebar .nav-group.open>.nav-item.active:not(:hover) {background:var(--teal-50);color:var(--teal-700);font-weight:700}
+.sidebar .nav-item.active .ni-chev {color:var(--teal-700)}
+.sidebar .nav-sub.active {background:var(--teal-50);color:var(--teal-700);box-shadow:none}
+.sidebar .nav-sub:hover {background:var(--grey-100)}
+.wi-detail .main {padding:0 0 110px}
+.wi-detail .pagehead {background:#fff;padding:24px 32px 16px;margin:0;top:var(--topbar-h)}
+.wi-detail .b-top h1 {font-size:20px;line-height:1.2;font-weight:680}
+.wi-detail .body-grid {padding:24px 32px 0;gap:20px}
+.wi-detail .rail {top:calc(var(--topbar-h) + var(--phh,78px) + 16px);height:calc(100vh - var(--topbar-h) - var(--phh,78px) - 100px);border-radius:14px;box-shadow:none;padding:16px}
+.wi-detail .card {border-radius:14px;box-shadow:none}
+.wi-detail .card-body {padding:20px}
+.wi-detail .sec-title {font-size:16px;font-weight:600}
+.wi-detail .sec-title::before {display:none}
+.wi-detail .control,.wi-detail .ro-1line {border-radius:10px;padding-left:16px;padding-right:16px;line-height:1.5}
+.wi-detail:not(.view-mode) .control:not([data-lock]) {background:#fff;border-color:var(--grey-300)}
+.wi-detail .control[contenteditable="true"]:focus {outline:2px solid var(--teal-600);outline-offset:2px}
+.wi-detail .step {border-radius:10px}
+.wi-detail .step.active .tn {background:var(--teal-600)}
+.wi-detail .map-lite {background:var(--grey-50);border-radius:12px}
+.wi-detail .chip {white-space:nowrap;line-height:1.5;font-weight:500;box-shadow:inset 0 0 0 1px #161F2624}
+.wi-detail .b-btn,.wi-detail .btn {border-radius:999px}
+.wi-detail .b-btn.primary,.wi-detail .btn-primary {background:var(--teal-600);border-color:var(--teal-600)}
+.wi-detail .b-btn.primary:hover,.wi-detail .btn-primary:hover {background:var(--teal-700);border-color:var(--teal-700)}
+.wi-detail .actionbar {background:#fff;box-shadow:none;padding:14px 32px}
+@media(max-width:1020px) {
+  .wi-detail .main {padding:72px 0 170px}
+  .wi-detail .pagehead {padding:16px}
+  .wi-detail .body-grid {padding:24px 16px 0}
+  .wi-detail .rail {height:auto;top:calc(var(--topbar-h) + var(--phh,78px));padding:16px}
+  .wi-detail .rail:has(.rsubs.on) {padding-bottom:50px}
+  .wi-detail.hd-hide .rail {top:calc(var(--topbar-h) + 12px)}
+  .wi-detail .actionbar {padding:10px 16px calc(10px + env(safe-area-inset-bottom))}
+  .wi-detail .b-btn {padding:0}
+}
+@media(max-width:640px) {
+  .wi-detail .b-top h1 {font-size:18px}
+  .wi-detail .card-body {padding:16px}
+}
+
+/* Stacked workflow: horizontal stages, section jumps, then full-width forms.
+   Reference: the original mwi-wi-create.html layout. */
+.wi-detail .body-grid {display:block;padding:0 32px}
+.wi-detail .pagehead {border-bottom:0}
+.wi-detail .ph-id {flex:1;flex-direction:column;align-items:flex-start;gap:6px}
+.wi-detail .rail {
+  position:sticky;top:calc(var(--topbar-h) + var(--phh,90px));z-index:24;
+  width:auto;height:auto;overflow:visible;border:0;border-bottom:1px solid var(--grey-200);
+  border-radius:0;box-shadow:none;background:#fff;margin:0 -32px 24px;padding:12px 32px;
+}
+.wi-detail .steps {flex-direction:row;align-items:center;overflow-x:auto;scrollbar-width:none;gap:0}
+.wi-detail .step {width:auto;flex:0 0 auto;padding:6px 2px;gap:10px;background:transparent;border-radius:8px}
+.wi-detail .step:hover {background:var(--teal-50)}
+.wi-detail .step .sl {flex:initial}
+.wi-detail .step .sn {overflow:visible;text-overflow:clip;white-space:nowrap}
+.wi-detail .step .ss {display:none}
+.wi-detail .step .tn {border:1.5px solid var(--grey-300);background:#fff;color:var(--grey-500)}
+.wi-detail .step.active .tn {background:var(--teal-600);border-color:var(--teal-600);color:#fff}
+.wi-detail .step.active .sn {color:var(--teal-700)}
+.wi-detail .step.done .tn {background:#fff;border-color:var(--teal-600);color:var(--teal-600)}
+.wi-detail .rconn {display:block;flex:1 0 32px;min-width:32px;width:auto;height:1.5px;margin:0 14px}
+.wi-detail .rsubs.on {position:static;display:flex;flex-direction:row;overflow-x:auto;gap:4px;margin:12px 0 0;scrollbar-width:none}
+.wi-detail .rsubs::before {display:none}
+.wi-detail .rsub {flex:0 0 auto;padding:8px 12px;border-radius:999px;white-space:nowrap}
+.wi-detail .rsub.active {background:var(--teal-600);color:#fff}
+.wi-detail .rail:has(.rsubs.on) {padding-bottom:12px}
+.wi-detail .formcol {width:100%}
+.wi-detail .fgrid {gap:20px 28px}
+.wi-detail .sec {scroll-margin-top:calc(var(--topbar-h) + var(--phh,90px) + var(--workflow-nav-h,110px) + 16px)}
+@media(max-width:1020px) {
+  .wi-detail .body-grid {padding:0 16px}
+  .wi-detail .rail {margin:0 -16px 24px;padding:12px 16px}
+  .wi-detail.hd-hide .rail {top:calc(var(--topbar-h) + 12px)}
+  .wi-detail .rconn {flex:0 0 20px;min-width:20px;margin:0 8px}
+}
+
+/* Reference form implementation: editable fields and stage-aware fixed actions. */
+.wi-stacked .sidebar {top:0;bottom:0;z-index:48;padding:18px 14px;display:flex;flex-direction:column;background:#fff}
+.wi-stacked .sb-brand {margin-bottom:12px}
+.wi-stacked .sb-brand img {height:30px;max-width:100%;display:block}
+.wi-stacked .sb-foot {margin-top:auto;padding-top:10px;border-top:1px solid var(--grey-200);display:flex;flex-direction:column;gap:8px}
+.wi-stacked .sb-foot .rolesw,.wi-stacked .rolesw-trg {width:100%;min-width:0}
+.wi-stacked .sb-foot .rolesw-menu {position:fixed;top:auto;bottom:84px;left:14px;right:auto}
+.wi-stacked .sb-notif {width:100%;border:0;background:none;text-align:left;font-family:inherit;cursor:pointer}
+.wi-stacked .sb-badge {margin-left:auto;min-width:20px;height:20px;padding:0 6px;color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center}
+.wi-stacked .nav-item {gap:12px;padding:11px 14px;min-height:43px;font-weight:600;margin-bottom:3px;border-radius:999px}
+.wi-stacked .nav-item.sub {margin-left:30px;padding:9px 14px;min-height:38px;font-size:13px}
+.wi-stacked .ni-chev {width:16px;height:16px;margin-left:auto}
+.wi-stacked .nav-toggle {position:fixed;top:20px;left:calc(var(--sidebar-w) - 16px);z-index:49;width:32px;height:32px;border:1px solid var(--grey-200);border-radius:50%;background:#fff;color:var(--grey-600);display:flex;align-items:center;justify-content:center}
+.wi-stacked .nav-toggle svg {width:16px;height:16px}
+.wi-stacked .main.narrow {padding:0 32px 140px;margin-left:var(--sidebar-w);max-width:none}
+.wi-stacked .stickyhead {background:var(--grey-50);top:var(--topbar-h)}
+.wi-stacked .card {border-radius:14px;border-color:var(--grey-200);box-shadow:var(--shadow-sm)}
+.wi-stacked .card-head {padding:20px 24px;border-bottom:1px solid var(--grey-100)}
+.wi-stacked .card-body {padding:24px;gap:20px 28px}
+.wi-stacked .control {border-radius:10px}
+.wi-stacked .action-bar {display:block;position:fixed;left:var(--sidebar-w);right:0;bottom:0;z-index:45;background:#fff;border-top:1px solid var(--grey-200);padding:12px 32px}
+.wi-stacked .action-bar .inner {max-width:none}
+.wi-stacked .action-bar .btn {border-radius:10px}
+@media(min-width:1021px){
+ .wi-stacked {--topbar-h:0px}
+ .wi-stacked .topbar {display:none}
+ .wi-stacked.nav-collapsed {--sidebar-w:76px}
+ .wi-stacked.nav-collapsed .sb-brand,.wi-stacked.nav-collapsed .nav-sub-list,.wi-stacked.nav-collapsed .rs-meta,.wi-stacked.nav-collapsed .rolesw-chev,.wi-stacked.nav-collapsed .ni-chev,.wi-stacked.nav-collapsed .sb-badge {display:none}
+ .wi-stacked.nav-collapsed .nav-item {font-size:0;width:44px;height:44px;padding:0;justify-content:center;margin:2px auto}
+ .wi-stacked.nav-collapsed .rolesw-trg {padding:4px;border:0;justify-content:center}
+}
+@media(max-width:1020px){
+ .wi-stacked .main.narrow {margin-left:0;padding:72px 16px 190px}
+ .wi-stacked .sidebar {width:min(300px,84vw);z-index:60}
+ .wi-stacked .nav-toggle {display:none}
+ .wi-stacked .action-bar {left:0;padding:10px 16px calc(10px + env(safe-area-inset-bottom))}
+ .wi-stacked .brand-logo-img {height:30px}
+ .wi-stacked .brand-name {display:none}
+}
+body.wi-stacked .action-bar {display:block}
+body.wi-stacked .action-bar .inner {margin:0;max-width:none;width:100%}
+
+/* Overview visual language, shared by the list and stacked forms. */
+.sidebar .nav-item {font-size:14px;font-weight:600;color:#51616B;gap:12px;padding:11px 14px;margin-bottom:3px;min-height:43px;line-height:1.5;border-radius:999px}
+.sidebar .nav-item.active {background:#E9F5F5;color:#005F64;font-weight:700}
+.sidebar .nav-item.active .nav-ico {color:#00747A}
+.sidebar .nav-item .nav-ico {width:18px;height:18px;flex:none;color:#9DAAB2}
+.sidebar .nav-item:hover {background:#EFF2F4;color:#27333B;text-decoration:none}
+.sidebar .rolesw-trg {display:flex;gap:8px;padding:8px;border:1px solid #E2E7EA;border-radius:999px;background:#fff;text-align:left}
+.sidebar .rs-av {width:34px;height:34px;font-size:12px;font-weight:700;background:#2B4E77;letter-spacing:normal}
+.sidebar .rolesw-trg .rs-meta {line-height:1.35;flex:1;min-width:0}
+.sidebar .rolesw-trg .rs-meta strong {font-size:13px;color:#3A4952}
+.sidebar .rolesw-trg .rs-meta span {font-size:11px;color:#51616B}
+.sidebar .rolesw-chev {width:16px;height:16px;flex:none;margin-left:auto;color:#51616B}
+.sidebar .rolesw-menu {padding:6px;border:1px solid #E2E7EA;border-radius:14px;background:#fff;box-shadow:0 12px 32px #17203326}
+.sidebar .rolesw-opt {border-radius:10px;padding:10px 12px}
+.sidebar .rolesw-opt.on {background:#E9F5F5}
+.sidebar .rolesw-opt .tick {color:#00747A}
+.nav-toggle {box-shadow:0 2px 8px #161F2612}
+body.wi-stacked .stickyhead {background:#fff;backdrop-filter:none;box-shadow:none;padding-top:24px}
+body.wi-stacked .context-bar .ctx strong {font-size:20px;font-weight:680;line-height:1.2;letter-spacing:-.01em}
+body.wi-stacked .context-bar .back {width:38px;height:38px;border-radius:999px;border:1px solid #E2E7EA;background:#fff;color:#51616B;display:flex;align-items:center;justify-content:center}
+body.wi-stacked .card {background:#fff;border:1px solid #E2E7EA;border-radius:14px;box-shadow:none}
+body.wi-stacked .card-head {padding:20px 20px 0;border-bottom:0;background:#fff}
+body.wi-stacked .card-head h2 {font-size:16px;font-weight:600;color:#161F26}
+body.wi-stacked .card-body {padding:20px}
+body.wi-stacked .btn,body.wi-stacked .action-bar .btn {border-radius:999px;font-size:14px;font-weight:600}
+body.wi-stacked .btn-primary {background:#00747A;border-color:#00747A}
+body.wi-stacked .btn-primary:hover:not(:disabled) {background:#005F64;border-color:#005F64}
+body.wi-stacked .control,body.wi-stacked .xselect-trigger,body.wi-stacked .xdate-trigger {border-radius:10px;border-color:#CBD4D9;padding-left:16px;padding-right:16px;font-size:14px;line-height:1.5;color:#3A4952}
+body.wi-stacked .field>label {font-size:12px;font-weight:600;color:#51616B}
+body.wi-stacked .chip {font-size:12px;font-weight:500;line-height:1.5;border-radius:999px;box-shadow:inset 0 0 0 1px #161F2624}
+body.wi-stacked .sj-chip {border-radius:999px;border-color:transparent;background:transparent;color:#51616B;font-size:14px;font-weight:500;padding:8px 12px}
+body.wi-stacked .sj-chip.is-on {background:#00747A;color:#fff}
+body.wi-stacked .sj-chip:hover:not(.is-on) {background:#E9F5F5;color:#005F64}
+body.wi-stacked .action-bar {box-shadow:none}
+@media(max-width:640px){body.wi-stacked .context-bar .ctx strong{font-size:18px}}
+
+/* Panel icon keeps its orientation when the sidebar is collapsed. */
+body.nav-collapsed .nav-toggle svg {transform:none}
+
+/* Shared shell dimensions and button shapes across all WI pages. */
+:root {--sidebar-w:248px}
+body button {border-radius:999px}
+body .btn,body .btn-map,body .btn-remove,body .btn-assign,
+body .boq-add,body .boq-del,body .page-btn,body .icon-btn,
+body .action-bar .btn,body .modal button {border-radius:999px}
+/* Dropdown options stay softly rounded and retain their full-row hit area. */
+body .xselect-trigger,body .xdate-trigger {border-radius:10px}
+body .xselect-option,body .rolesw-opt {border-radius:10px}
+@media(min-width:1021px){body.nav-collapsed{--sidebar-w:76px}}
+
+/* Neutral background is explicit so Overview does not depend on WI-only tokens. */
+:root {--grey-50:#F7F9FA;--grey-700:#3A4952}
+body,#monitoring,#main>.space-y-8 {background-color:#F7F9FA}
+.wi-nav-toggle {width:100%;border:0;background:transparent;text-align:left;font-family:inherit;cursor:pointer}
+.wi-nav-chevron {margin-left:auto;flex:none;color:#51616B}
+.wi-nav-toggle[aria-expanded="true"] .wi-nav-chevron {transform:rotate(180deg)}
+#wi-submenu {padding:0 0 6px 30px}
+#wi-submenu[hidden] {display:none}
+.wi-sub-link {display:block;padding:9px 14px;margin-bottom:3px;border-radius:999px;font-size:13px;color:#51616B;text-decoration:none}
+.wi-sub-link.current {background:#E9F5F5;color:#005F64;font-weight:700}
+.wi-sub-link:not([aria-disabled]):hover {background:#EFF2F4;text-decoration:none}
+.sidebar [aria-disabled="true"],#sidebar [aria-disabled="true"] {opacity:.4;cursor:not-allowed;background:transparent!important;box-shadow:none}
+@media(min-width:1021px){
+ body.nav-collapsed #wi-submenu,body.nav-collapsed .wi-group-label,body.nav-collapsed .wi-nav-chevron {display:none}
+ body.nav-collapsed .wi-nav-toggle {font-size:0}
+}
+
+/* Draft status: one treatment in list, mobile cards and form headers. */
+:root {--st-draft-bg:#FEF3E2;--st-draft-ink:#7A4506}
+body .chip.chip-draft,body .chip.st-draft {
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--st-draft-bg);color:var(--st-draft-ink);
+  border:0;border-radius:999px;padding:4px 10px;
+  font-size:12px;font-weight:500;line-height:1.5;white-space:nowrap;
+  box-shadow:inset 0 0 0 1px rgba(22,31,38,.14);
+}
+body .chip.chip-draft::before,body .chip.st-draft::before {
+  content:"";display:block;width:7px;height:7px;flex:none;
+  border-radius:50%;background:currentColor;
+}

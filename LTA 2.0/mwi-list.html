@@ -1,0 +1,2113 @@
+<!DOCTYPE html>
+<html lang="en-SG">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Maintenance Work Instructions · RMWP</title>
+<style>
+/* ============================================================
+   RMWP Design Tokens — SGDS-informed, LTA-branded
+   Structure follows the Singapore Government Design System
+   (designsystem.tech.gov.sg) foundations: 10-step colour
+   scales, semantic colours, perceptual lightness curve.
+   Primary swapped to LTA teal, secondary to LTA navy,
+   danger aligned to LTA red/maroon accent.
+   Pure CSS custom properties — no framework dependency,
+   portable to OutSystems.
+   ============================================================ */
+:root{
+  /* ── Iris palette ──────────────────────────────────────────────────────────
+     Primary is periwinkle #5C6BBC — the colour lta.gov.sg actually uses for every
+     link and nav item (143 occurrences in its computed styles). It is neither the
+     old teal nor the logo navy, so this version stays distinct from the other two.
+     Token names stay --teal-* so the ~40 existing usages don't all have to change. */
+  --teal-50:#F1F1F6; --teal-100:#E1E2ED; --teal-200:#C5C9DD;
+  --teal-300:#9AA3D5; --teal-400:#7B87C9; --teal-500:#6E7CC4;
+  --teal-600:#5C6BBC; --teal-700:#4453A4; --teal-800:#384488;
+  --teal-900:#2B3569;
+  --chrome-600:#5E6A78; --chrome-700:#46505A; --chrome-800:#343A40; --chrome-900:#272C32;
+  /* ── Iris chrome ──────────────────────────────────────────────────────────
+     The sidebar is a light wash of the primary rather than a dark block: at
+     #F4F5FC the body ink reads 8.74:1, so nothing has to be dimmed to fit.
+     The five most-used sections are colour-coded with LTA's own accent inks
+     (.bg-color1..5) — that is what keeps a light chrome from going flat.
+     Anything below "User" stays grey on purpose; nine coloured icons is noise. */
+  --chrome-bg:#EDEFF9; --chrome-bd:#DDE1F2;
+  --chrome-ink:#3F4652;      /* 8.29:1 on the wash */
+  --chrome-ink-sub:#51616B;  /* 5.60:1 — sub items are 13px, so 4.5 is the floor and
+                                the old #6E7E88 only made 3.66 once the wash deepened */
+  --a-teal:#10757E;   /* 4.99 */
+  --a-coral:#AD210B;  /* 6.44 */
+  --a-amber:#866709;  /* 4.88 */
+  --a-lime:#5B761B;   /* 4.77 */
+  /* Status accents = LTA's own .bg-color1..5 (Featured Projects), mapped to the five stages. */
+  --st-draft-bg:#EFF1F2; --st-draft-ink:#3F4852;   /* color5 slate  */
+  --st-wip-bg:#FBE9E6;   --st-wip-ink:#8E1704;     /* color2 coral  */
+  --st-ver-bg:#FBF6E6;   --st-ver-ink:#8E6B04;     /* color1 yellow */
+  --st-appr-bg:#E8E8FA;  --st-appr-ink:#100D84;    /* color4 violet */
+  --st-done-bg:#F4F8EA;  --st-done-ink:#5B761B;    /* color3 lime   */
+  /* Role identity — SS and Eng take the accent of the stage they own (coral = work in
+     progress, amber = verification); CO gets the logo teal as the anchor role. All three
+     sit far from the primary periwinkle (231°) so an avatar never reads as a button. */
+  /* Role avatars: one family, walked along the hue rather than the lightness.
+     CO stays on the primary; SS and Engineer step 20° and 39° towards violet at the
+     same lightness and saturation (L55% S42%), so the three read as one set instead
+     of the old teal / coral / amber, which were three unrelated hues on a
+     periwinkle chrome. All three clear 4.5:1 against the white initials — the .rb
+     timeline badges are 12px, so that is the floor, and 4.79 is the tightest.
+     ⚠️ Same lightness means hue is the ONLY cue. SS and Engineer both render "DT",
+     so they are the pair that has to stay apart — they sit at the two ends (39°). */
+  --role-co:#5C6BBC;   /* 231° — the primary   white 4.90:1 */
+  --role-ss:#6D5CBD;   /* 251°                 white 5.36:1 */
+  --role-eng:#8C5CBD;  /* 270°                 white 4.79:1 */
+  /* Brand · LTA navy (secondary) */
+  --navy-50:#EEF2F8; --navy-100:#DCE4F0; --navy-200:#B9C9E0;
+  --navy-300:#8FA7C8; --navy-400:#6485AD; --navy-500:#426690;
+  --navy-600:#2B4E77; --navy-700:#1B365D; --navy-800:#142848;
+  --navy-900:#0E1D35;
+  /* Neutrals (cool grey, 10 steps) */
+  --grey-25:#FCFDFD; --grey-50:#F7F9FA; --grey-100:#EFF2F4;
+  --grey-200:#E2E7EA; --grey-300:#CBD4D9; --grey-400:#9DAAB2;
+  --grey-500:#6E7E88; --grey-600:#51616B; --grey-700:#3A4952;
+  --grey-800:#27333B; --grey-900:#161F26;
+  /* Semantic */
+  --success-50:#EAF5EE; --success-600:#177245; --success-700:#0F5C37;
+  --warning-50:#FEF3E2; --warning-600:#A15C07; --warning-700:#7A4506;
+  --danger-50:#F9ECEB;  --danger-600:#882428;  --danger-700:#6E1D20; /* LTA maroon */
+  /* the maroon disappears on the dark sidebar; this is the brightest red that still
+     carries white text at 4.5:1 (same value as the navy build) */
+  --danger-on-dark:#E03131;
+  --info-50:#EBF1FB;    --info-600:#175CD3;    --info-700:#1247A4;
+  /* Typography */
+  --font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --font-mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+  --fs-xs:.75rem; --fs-sm:.8125rem; --fs-base:.875rem;
+  --fs-md:.9375rem; --fs-lg:1.0625rem; --fs-xl:1.375rem; --fs-2xl:1.75rem;
+  /* Heading scale (2026-08-05). Hard ceilings: H1 20px, H2 16px — anything that reads
+     as a page title or a section/card title must use these, not a raw rem value. */
+  --fs-h1:1.25rem;      /* 20px  page title           */
+  --fs-h1-sm:1.125rem;  /* 18px  same title on mobile */
+  --fs-h2:1rem;         /* 16px  section / card title */
+  /* Shape & elevation */
+  --r-sm:6px; --r-md:10px; --r-lg:14px; --r-pill:999px;
+  --shadow-sm:0 1px 2px rgba(22,31,38,.06);
+  --shadow-md:0 2px 8px rgba(22,31,38,.07),0 1px 2px rgba(22,31,38,.05);
+  --shadow-lg:0 8px 24px rgba(22,31,38,.10);
+  /* Layout */
+  --sidebar-w:248px; --topbar-h:72px; --sectionnav-h:48px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+/* the page field is a cool violet, not neutral grey: it sits between white cards
+   (1.08:1, so their edges still read) and the #EDEFF9 sidebar (1.06:1) */
+body{
+  font-family:var(--font-sans);font-size:var(--fs-base);
+  color:var(--grey-800);background:#F5F6FC;
+  -webkit-font-smoothing:antialiased;line-height:1.5;
+}
+a{color:var(--teal-600);text-decoration:none}
+a:hover{text-decoration:underline}
+:focus-visible{outline:2px solid var(--teal-600);outline-offset:2px;border-radius:var(--r-sm)}
+button{font-family:inherit;cursor:pointer}
+
+/* ---------- App frame ---------- */
+.topbar{
+  position:fixed;top:0;left:0;right:0;height:var(--topbar-h);z-index:40;
+  background:#fff;border-bottom:1px solid var(--grey-200);
+  display:flex;align-items:center;gap:16px;padding:0 20px;
+}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.brand-logo-img{
+  height:52px;width:auto;flex:none;display:block;
+}
+.brand-name{border-left:1px solid var(--grey-200);padding-left:14px;margin-left:2px}
+.brand-name{font-weight:650;color:var(--navy-700);font-size:var(--fs-md);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brand-name small{display:block;font-weight:450;color:var(--grey-500);font-size:var(--fs-xs)}
+.topbar-spacer{flex:1}
+.icon-btn{
+  width:38px;height:38px;border-radius:var(--r-md);border:1px solid transparent;
+  background:transparent;color:var(--grey-600);position:relative;
+  display:inline-flex;align-items:center;justify-content:center;
+}
+.icon-btn:hover{background:var(--grey-100)}
+.avatar{
+  display:flex;align-items:center;gap:10px;padding:4px 8px 4px 4px;
+  border-radius:var(--r-pill);border:1px solid var(--grey-200);background:#fff;
+}
+.avatar-circle{
+  width:32px;height:32px;border-radius:50%;flex:none;
+  background:var(--teal-600);color:#fff;font-size:12px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+}
+.avatar-meta{line-height:1.15;text-align:left}
+.avatar-meta strong{font-size:var(--fs-sm);color:var(--grey-800);display:block}
+.avatar-meta span{font-size:var(--fs-xs);color:var(--grey-500)}
+
+.sidebar{
+  /* full height: the brand sits at the top and the account block at the bottom, so on
+     desktop there is no topbar at all. z-index clears the action bar (45). */
+  position:fixed;top:0;left:0;bottom:0;width:var(--sidebar-w);z-index:48;
+  background:var(--chrome-bg);border-right:1px solid var(--chrome-bd);
+  padding:18px 14px;overflow-y:auto;display:flex;flex-direction:column;transition:width .2s ease;
+}
+.sb-brand{padding:6px 8px 14px;border-bottom:1px solid var(--chrome-bd);margin-bottom:12px}
+.sb-brand img{height:30px;display:block;max-width:100%}
+.sb-foot{margin-top:auto;padding-top:10px;border-top:1px solid var(--chrome-bd);display:flex;flex-direction:column;gap:2px}
+.sb-notif{width:100%;border:none;background:none;cursor:pointer;font-family:inherit;text-align:left}
+.sb-badge{margin-left:auto;min-width:20px;height:20px;padding:0 6px;border-radius:10px;background:var(--a-coral);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.sb-foot .rolesw{width:100%;min-width:0;margin-top:6px}
+.sb-foot .rolesw-trg{width:100%}
+.sb-foot .rolesw-trg .rs-meta{min-width:0}
+.sb-foot .rolesw-trg .rs-meta strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* the menu would be clipped by the sidebar's own scroll box, so it escapes to the viewport */
+.sb-foot .rolesw-menu{position:fixed;top:auto;bottom:84px;left:14px;right:auto;transform-origin:bottom left}
+.sb-foot .rolesw-chev{margin-left:auto}
+.nav-group-label{font-size:var(--fs-xs);font-weight:650;color:var(--grey-400);text-transform:uppercase;letter-spacing:.06em;padding:14px 12px 6px}
+.nav-group,.nav-sub-list{display:contents}
+.nav-item{
+  display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:12px;
+  color:var(--chrome-ink);font-size:var(--fs-base);font-weight:600;margin-bottom:3px;
+}
+/* on a light chrome the selected state has to lift, not darken */
+.nav-item:hover{background:#fff;text-decoration:none;color:var(--grey-900)}
+.nav-item.active{background:#fff;color:var(--teal-800);font-weight:700}
+
+/* every section carries a colour; all ≥4.5:1 on the #F4F5FC wash.
+   Work instruction and Sector share a hue (231° / 228°) but sit four rows
+   apart and differ hugely in lightness — the brand has no tenth hue. */
+.nav-item[data-sec="overview"] .nav-ico{color:var(--a-teal)}
+.nav-item[data-sec="wi"] .nav-ico{color:var(--teal-600)}
+.nav-item[data-sec="dash"] .nav-ico{color:var(--a-coral)}
+.nav-item[data-sec="rep"] .nav-ico{color:var(--a-amber)}
+.nav-item[data-sec="user"] .nav-ico{color:var(--a-lime)}
+.nav-item[data-sec="sector"] .nav-ico{color:#243888}   /* logo 靛藍  9.68 */
+.nav-item[data-sec="contract"] .nav-ico{color:#882428}   /* logo 楓紅  8.29 */
+.nav-item[data-sec="asset"] .nav-ico{color:#0F5C37}   /* 深青綠    7.41 */
+.nav-item[data-sec="config"] .nav-ico{color:#46505A}   /* 石板中性  7.56 */
+.nav-item.sub{margin-left:30px;padding:9px 14px;font-size:var(--fs-sm);color:var(--chrome-ink-sub);font-weight:500;position:relative}
+.nav-item.sub::before{content:"";position:absolute;left:-11px;top:-3px;bottom:0;width:1.5px;background:var(--chrome-bd)}
+.nav-item.sub:hover{color:var(--grey-900);background:#fff}
+.nav-item.sub.current{color:var(--teal-800);font-weight:700;background:#fff;box-shadow:0 1px 2px rgba(22,31,38,.10)}
+.nav-ico{width:18px;height:18px;flex:none;color:var(--grey-600)}
+
+
+.main{margin-left:var(--sidebar-w);padding:calc(var(--topbar-h) + 24px) 32px 96px;max-width:none;
+  min-height:100vh;display:flex;flex-direction:column}
+
+/* ---------- Page header ---------- */
+.breadcrumb{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:var(--fs-sm);color:var(--grey-500);margin-bottom:14px}
+.breadcrumb .sep{color:var(--grey-300)}
+.page-head{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start;justify-content:space-between;margin-bottom:18px}
+.page-head h1{font-size:var(--fs-h1);line-height:1.2;color:var(--grey-900);font-weight:680;letter-spacing:-.01em}
+.eyebrow{font-size:var(--fs-sm);font-weight:600;color:var(--teal-700);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+.page-sub{color:var(--grey-600);font-size:var(--fs-md);margin-top:6px;max-width:60ch}
+.head-actions{display:flex;gap:10px;flex:none}
+.btn{
+  display:inline-flex;align-items:center;gap:8px;border-radius:var(--r-md);
+  font-size:var(--fs-base);font-weight:600;padding:10px 16px;border:1px solid transparent;
+  transition:background .15s ease,border-color .15s ease;
+}
+/* tier 1 — the page's own action. Deeper than every other filled surface on
+   purpose: that gap is the hierarchy. White on teal-700 is 6.96:1 (4.90 before). */
+.btn-primary{background:var(--teal-700);color:#fff}
+.btn-primary:hover{background:var(--teal-800)}
+.btn-ghost{background:#fff;border-color:var(--grey-300);color:var(--grey-700)}
+.btn-ghost:hover{border-color:var(--grey-400);background:var(--grey-50)}
+.btn svg{width:16px;height:16px}
+
+/* status chips */
+.chip{
+  display:inline-flex;align-items:center;gap:6px;border-radius:var(--r-pill);
+  font-size:var(--fs-sm);font-weight:620;padding:4px 12px;line-height:1.4;white-space:nowrap;
+  /* a defined edge, so a pastel chip never dissolves into a tinted row */
+  box-shadow:inset 0 0 0 1px rgba(22,31,38,.14);
+}
+.chip::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.chip-draft{background:var(--st-draft-bg);color:var(--st-draft-ink)}
+.chip-wip{background:var(--st-wip-bg);color:var(--st-wip-ink)}
+.chip-done{background:var(--success-50);color:var(--success-700)}
+.chip-idle{background:var(--grey-100);color:var(--grey-600)}
+.chip-sm{font-size:var(--fs-xs);padding:2px 10px}
+
+/* summary strip */
+.summary-strip{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+  background:#fff;border:1px solid var(--grey-200);border-radius:var(--r-lg);
+  box-shadow:var(--shadow-sm);overflow:hidden;margin-bottom:22px;
+}
+.summary-cell{padding:14px 18px;border-left:1px solid var(--grey-100)}
+.summary-cell:first-child{border-left:none}
+.summary-cell dt{font-size:var(--fs-xs);color:var(--grey-500);font-weight:560;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px}
+.summary-cell dd{font-size:var(--fs-md);color:var(--grey-900);font-weight:600}
+.summary-cell dd small{display:block;font-weight:450;color:var(--grey-500);font-size:var(--fs-xs);margin-top:1px}
+
+/* ---------- Sticky section nav ---------- */
+.section-nav{
+  position:sticky;top:var(--topbar-h);z-index:20;
+  background:rgba(247,249,250,.92);backdrop-filter:blur(6px);
+  margin:0 -8px 26px;padding:8px;display:flex;gap:6px;overflow-x:auto;
+  scrollbar-width:none;
+}
+.section-nav::-webkit-scrollbar{display:none}
+.section-nav a{
+  flex:none;padding:8px 16px;border-radius:var(--r-pill);font-size:var(--fs-base);
+  font-weight:560;color:var(--grey-600);border:1px solid transparent;
+}
+.section-nav a:hover{background:var(--grey-100);text-decoration:none}
+.section-nav a.active{background:var(--navy-700);color:#fff}
+.section-nav a .count{
+  display:inline-block;margin-left:6px;padding:0 7px;border-radius:var(--r-pill);
+  background:rgba(255,255,255,.22);font-size:var(--fs-xs);font-weight:700;
+}
+.section-nav a:not(.active) .count{background:var(--grey-200);color:var(--grey-600)}
+
+/* ---------- Cards & sections ---------- */
+.card{
+  background:#fff;border:1px solid var(--grey-200);border-radius:var(--r-lg);
+  box-shadow:var(--shadow-sm);margin-bottom:26px;scroll-margin-top:calc(var(--topbar-h) + 64px);
+}
+.card-head{
+  display:flex;flex-wrap:wrap;align-items:center;gap:10px;
+  padding:18px 24px;border-bottom:1px solid var(--grey-100);
+}
+.card-head h2{font-size:var(--fs-h2);font-weight:660;color:var(--grey-900)}
+.card-head .hint{font-size:var(--fs-sm);color:var(--grey-500)}
+.card-head .spacer{flex:1}
+.card-body{padding:22px 24px}
+
+/* label–value grid (read-only, replaces disabled form controls) */
+.lv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:20px 28px}
+.lv dt{font-size:var(--fs-xs);color:var(--grey-500);font-weight:580;text-transform:uppercase;letter-spacing:.045em;margin-bottom:4px}
+.lv dd{font-size:var(--fs-md);color:var(--grey-900);font-weight:520;line-height:1.45}
+.lv dd .muted{color:var(--grey-400);font-weight:450}
+.lv dd small{display:block;color:var(--grey-500);font-weight:440;font-size:var(--fs-sm);margin-top:1px}
+.code-chip{
+  font-family:var(--font-mono);font-size:var(--fs-xs);font-weight:560;
+  background:var(--grey-100);border:1px solid var(--grey-200);color:var(--grey-600);
+  border-radius:var(--r-sm);padding:2px 7px;white-space:nowrap;
+}
+.lv-span{grid-column:1/-1}
+.divider{height:1px;background:var(--grey-100);margin:22px 0}
+.group-label{font-size:var(--fs-sm);font-weight:660;color:var(--navy-700);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.group-label::after{content:"";flex:1;height:1px;background:var(--grey-100)}
+
+/* map placeholder */
+.map-frame{
+  position:relative;border:1.5px dashed var(--grey-300);border-radius:var(--r-md);
+  background:
+    linear-gradient(rgba(0,116,122,.035),rgba(27,54,93,.05)),
+    repeating-linear-gradient(0deg,transparent 0 46px,rgba(27,54,93,.05) 46px 47px),
+    repeating-linear-gradient(90deg,transparent 0 46px,rgba(27,54,93,.05) 46px 47px);
+  min-height:230px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:8px;text-align:center;padding:24px;
+}
+.map-frame .pin{width:36px;height:36px;color:var(--teal-600)}
+.map-frame strong{color:var(--grey-700);font-size:var(--fs-md)}
+.map-frame span{color:var(--grey-500);font-size:var(--fs-sm);max-width:44ch}
+
+/* ---------- Assets & tasks ---------- */
+.progress-overview{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.progress-track{flex:1;min-width:160px;height:8px;border-radius:var(--r-pill);background:var(--grey-100);overflow:hidden}
+.progress-fill{height:100%;border-radius:var(--r-pill);background:linear-gradient(90deg,var(--teal-500),var(--teal-600))}
+.progress-label{font-size:var(--fs-sm);font-weight:620;color:var(--grey-700);white-space:nowrap}
+
+.jump-select{
+  display:flex;align-items:center;gap:8px;font-size:var(--fs-sm);color:var(--grey-600);
+}
+.jump-select select{
+  font-family:inherit;font-size:var(--fs-base);padding:8px 12px;border-radius:var(--r-md);
+  border:1px solid var(--grey-300);background:#fff;color:var(--grey-800);max-width:230px;
+}
+
+.asset{border:1px solid var(--grey-200);border-radius:var(--r-md);margin-bottom:16px;overflow:hidden;scroll-margin-top:calc(var(--topbar-h) + 64px)}
+.asset:last-child{margin-bottom:0}
+.asset-head{
+  display:flex;flex-wrap:wrap;align-items:center;gap:12px;
+  padding:14px 18px;background:var(--grey-50);border-bottom:1px solid var(--grey-200);
+}
+.asset-ico{
+  width:38px;height:38px;flex:none;border-radius:var(--r-md);
+  background:var(--navy-50);color:var(--navy-600);
+  display:flex;align-items:center;justify-content:center;
+}
+.asset-ico svg{width:20px;height:20px}
+.asset-title{min-width:0;flex:1}
+.asset-title strong{display:block;font-size:var(--fs-md);color:var(--grey-900);font-weight:640}
+.asset-title span{font-size:var(--fs-sm);color:var(--grey-500)}
+.asset-meta{display:flex;align-items:center;gap:10px;flex:none}
+
+.task{border-top:1px solid var(--grey-100)}
+.task summary{
+  list-style:none;display:flex;align-items:center;gap:12px;
+  padding:13px 18px;cursor:pointer;user-select:none;
+}
+.task summary::-webkit-details-marker{display:none}
+.task summary:hover{background:var(--grey-25)}
+.task-idx{
+  width:26px;height:26px;flex:none;border-radius:50%;font-size:var(--fs-xs);font-weight:700;
+  background:var(--grey-100);color:var(--grey-600);
+  display:flex;align-items:center;justify-content:center;
+}
+.task[open] .task-idx{background:var(--teal-600);color:#fff}
+.task-name{flex:1;min-width:0;font-weight:560;color:var(--grey-800);font-size:var(--fs-base)}
+.task-name small{display:block;font-weight:440;color:var(--grey-500);font-size:var(--fs-xs)}
+.task-progress{display:none;align-items:center;gap:8px;width:130px;flex:none}
+@media(min-width:760px){.task-progress{display:flex}}
+.task-progress .progress-track{min-width:0}
+.task-progress em{font-style:normal;font-size:var(--fs-xs);font-weight:650;color:var(--grey-600);width:34px;text-align:right}
+.task-chevron{width:16px;height:16px;flex:none;color:var(--grey-400);transition:transform .18s ease}
+.task[open] .task-chevron{transform:rotate(180deg)}
+.task-body{padding:6px 18px 20px 56px;background:var(--grey-25);border-top:1px dashed var(--grey-200)}
+.task-body .lv-grid{margin-top:14px}
+
+/* photo slots */
+.photo-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-top:14px}
+.photo-slot{border:1px solid var(--grey-200);border-radius:var(--r-md);overflow:hidden;background:#fff}
+.photo-slot .ph-img{height:96px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--grey-100),var(--grey-200))}
+.photo-slot.filled .ph-img{background:linear-gradient(135deg,var(--teal-100),var(--navy-100))}
+.photo-slot .ph-img svg{width:26px;height:26px;color:var(--grey-400)}
+.photo-slot.filled .ph-img svg{color:var(--teal-700)}
+.photo-slot figcaption{padding:8px 10px;font-size:var(--fs-xs);color:var(--grey-600);font-weight:580;display:flex;justify-content:space-between;align-items:center;gap:6px}
+.photo-slot figcaption .state{font-weight:450;color:var(--grey-400)}
+.photo-slot.filled figcaption .state{color:var(--success-600);font-weight:600}
+
+/* ---------- Empty state ---------- */
+.empty-state{
+  display:flex;flex-direction:column;align-items:center;gap:10px;
+  text-align:center;padding:44px 24px;
+}
+.empty-ico{
+  width:52px;height:52px;border-radius:50%;
+  background:var(--teal-50);color:var(--teal-600);
+  display:flex;align-items:center;justify-content:center;
+}
+.empty-ico svg{width:24px;height:24px}
+.empty-state strong{color:var(--grey-800);font-size:var(--fs-md);font-weight:640}
+.empty-state span{color:var(--grey-500);font-size:var(--fs-sm);max-width:46ch}
+
+/* ---------- Footer actions ---------- */
+.page-foot{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:6px}
+.foot-note{font-size:var(--fs-xs);color:var(--grey-400)}
+
+.menu-btn{display:none}
+.backdrop{position:fixed;inset:0;background:rgba(22,31,38,.4);z-index:50;opacity:0;pointer-events:none;transition:opacity .22s ease}
+.backdrop.show{opacity:1;pointer-events:auto}
+
+/* Desktop: brand lives in the sidebar, so the topbar goes away entirely */
+@media(min-width:1021px){
+  :root{--topbar-h:0px}
+  .topbar{display:none}
+}
+
+/* Collapse-to-rail toggle (Layout A style) */
+.nav-toggle{position:fixed;top:20px;left:calc(var(--sidebar-w) - 16px);z-index:49;width:32px;height:32px;border-radius:50%;background:#fff;border:1px solid var(--grey-200);box-shadow:var(--shadow-md);display:flex;align-items:center;justify-content:center;color:var(--grey-600);transition:left .2s ease;cursor:pointer}
+.nav-toggle:hover{color:var(--grey-900)}
+.nav-toggle svg{width:16px;height:16px;transition:transform .2s}
+@media(max-width:1020px){.nav-toggle{display:none}}
+@media(min-width:1021px){
+  body.nav-collapsed{--sidebar-w:76px}
+  body.nav-collapsed .nav-toggle svg{transform:rotate(180deg)}
+  body.nav-collapsed .sb-brand{display:none}
+  body.nav-collapsed .sb-badge{display:none}
+  body.nav-collapsed .sb-foot .rolesw-trg{width:44px;height:44px;padding:0;justify-content:center;border-radius:50%;margin:0 auto}
+  body.nav-collapsed .sb-foot .rs-meta,body.nav-collapsed .sb-foot .rolesw-chev{display:none}
+  body.nav-collapsed .nav-item{width:44px;height:44px;margin:2px auto;padding:0;justify-content:center;font-size:0;gap:0;border-radius:12px}
+  body.nav-collapsed .nav-item.sub{display:none}
+  body.nav-collapsed .nav-sub-list{display:none}
+  body.nav-collapsed .sidebar{overflow:visible}
+  body.nav-collapsed .nav-group{display:block;position:relative}
+  body.nav-collapsed .nav-group::after{content:"";position:absolute;left:100%;top:0;width:12px;height:100%}
+  body.nav-collapsed .nav-group:hover .nav-sub-list{display:block;position:absolute;left:calc(100% + 10px);top:0;margin:0;padding:8px;width:196px;background:var(--chrome-bg);border:1px solid var(--chrome-bd);border-radius:12px;box-shadow:var(--shadow-lg);z-index:70}
+  body.nav-collapsed .nav-group:hover .nav-sub-list::before{content:"Work instruction";display:block;font-size:11px;font-weight:650;color:var(--grey-400);padding:6px 10px 8px}
+  body.nav-collapsed .nav-group:hover .nav-item.sub{display:flex;width:auto;height:auto;margin:0 0 2px 0;padding:9px 14px;font-size:var(--fs-sm);justify-content:flex-start}
+  body.nav-collapsed .nav-group:hover .nav-item.sub::before{display:none}
+}
+
+/* ---------- Responsive ---------- */
+@media(max-width:1020px){
+  .menu-btn{display:inline-flex}
+  .sidebar{
+    z-index:60;transform:translateX(-105%);transition:transform .25s ease;
+    box-shadow:none;width:min(300px,84vw);
+  }
+  .sidebar.open{transform:none;box-shadow:var(--shadow-lg)}
+  .main{margin-left:0;padding:calc(var(--topbar-h) + 16px) 16px 72px}
+  .avatar-meta{display:none}
+  /* mobile topbar matches the sidebar it opens */
+  .topbar{background:var(--chrome-bg);border-bottom-color:var(--chrome-bd)}
+  .topbar .menu-btn{color:var(--chrome-ink)}
+  .topbar .menu-btn:hover{background:#fff}
+  .brand-logo-img{display:block;height:30px}
+  .brand-name{display:none}
+}
+@media(max-width:640px){
+  .brand-name{display:none}
+  .page-head h1{font-size:var(--fs-h1-sm)}
+  .summary-strip{grid-template-columns:1fr 1fr}
+  .summary-cell{border-left:none;border-top:1px solid var(--grey-100)}
+  .summary-cell:nth-child(-n+2){border-top:none}
+  .summary-cell:nth-child(even){border-left:1px solid var(--grey-100)}
+  .card-head,.card-body{padding-left:16px;padding-right:16px}
+  .lv-grid{grid-template-columns:1fr 1fr;gap:16px}
+  .task-body{padding-left:16px}
+  /* keep the actions beside the title and let the heading wrap instead */
+  .page-head{flex-wrap:nowrap;gap:12px;align-items:center}
+  .page-head>div:first-child{min-width:0}
+  .page-head h1{overflow-wrap:anywhere}
+  .head-actions{width:auto;flex:none}
+  .head-actions .btn{flex:none;width:40px;height:40px;padding:0;justify-content:center;border-radius:10px}
+  .head-actions .btn svg{width:20px;height:20px}
+  .head-actions .btn .bl{display:none}
+  .map-frame{min-height:170px}
+}
+
+/* ============ WI list page ============ */
+.list-toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:18px}
+/* icon-only filter trigger; the applied-filter count rides as a badge */
+/* label removed, but the button keeps its original 93x39 footprint so the toolbar
+   still balances against the search box (same 39px height) */
+/* square icon button — 39px matches the search box height set by the toolbar row */
+.filter-btn{position:relative;flex:none;width:39px;padding:0;justify-content:center;align-self:stretch}
+.fcount{position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;
+  background:var(--teal-600);color:#fff;font-size:.6875rem;font-weight:700;line-height:1;
+  display:none;align-items:center;justify-content:center}
+.filter-btn.has-filters .fcount{display:flex}
+.list-toolbar .btn-ghost{margin-left:auto}   /* Filter sits at the right edge */
+.search-box{
+  flex:0 1 35%;min-width:200px;display:flex;align-items:center;gap:10px;
+  background:#fff;border:1px solid var(--grey-300);border-radius:var(--r-md);
+  padding:10px 14px;color:var(--grey-400);
+}
+.search-box input{border:none;outline:none;flex:1;font-family:inherit;font-size:var(--fs-base);color:var(--grey-800);background:transparent}
+.search-box svg{width:17px;height:17px;flex:none}
+/* phone: the search field takes the whole row instead of the 35% it gets on desktop —
+   the Filter button keeps its square footprint beside it */
+@media(max-width:860px){.search-box{flex:1 1 auto;min-width:0}}
+.filter-chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.fchip{
+  display:inline-flex;align-items:center;gap:6px;border-radius:var(--r-pill);
+  border:1px solid var(--teal-200);background:var(--teal-50);color:var(--teal-700);
+  font-size:var(--fs-sm);font-weight:580;padding:5px 12px;
+}
+.fchip button{border:none;background:none;color:inherit;display:flex;padding:0}
+.fchip button svg{width:13px;height:13px}
+.result-count{font-size:var(--fs-sm);color:var(--grey-500);margin-left:auto}
+
+/* Desktop table */
+.wi-table{width:auto;min-width:100%;border-collapse:collapse;background:#fff}
+.wi-table th{
+  text-align:left;font-size:var(--fs-xs);font-weight:650;color:var(--teal-900);
+  text-transform:uppercase;letter-spacing:.045em;padding:12px 14px;
+  border-bottom:1px solid var(--grey-200);background:#d6ddfb;white-space:nowrap;
+}
+.wi-table th button{
+  border:none;background:none;font:inherit;color:inherit;display:inline-flex;
+  align-items:center;gap:5px;text-transform:inherit;letter-spacing:inherit;text-align:left;padding:0;
+}
+.wi-table th button{cursor:pointer}
+.wi-table th button:hover{color:var(--grey-700)}
+.wi-table th button .s-ico{width:12px;height:12px;flex:none;color:var(--grey-400)}
+.wi-table th button .s-ico path{opacity:.5}
+.wi-table th button.sorted,.wi-table th button.sorted .s-ico{color:var(--teal-800)}
+.wi-table th button.sorted.asc .up,.wi-table th button.sorted.desc .dn{opacity:1;stroke-width:3.2}
+.wi-table th button.sorted.asc .dn,.wi-table th button.sorted.desc .up{opacity:.15}
+.wi-table td{padding:13px 14px;border-bottom:1px solid var(--grey-100);font-size:var(--fs-base);font-weight:450;color:var(--grey-800);vertical-align:middle;white-space:nowrap}
+.wi-table tbody tr{cursor:pointer;transition:background .12s ease;scroll-margin-top:calc(var(--topbar-h) + 60px)}
+/* ── row zebra ─────────────────────────────────────────────────────────────
+   .zebra is set by render(), not nth-child: rows get hidden and re-appended as the
+   bucket / filter / page changes, so DOM position says nothing about what the reader
+   actually sees. The sticky action cell has to take the stripe too, or it floats
+   white over a tinted row. */
+.wi-table tbody tr.zebra,.wi-table.show-act tbody tr.zebra td.act-col{background-color:#F7F7FC}
+/* ── hover: a veil, not a colour ────────────────────────────────────────────
+   The overlay is painted as a background-IMAGE, so it composites over whatever
+   background-color the cell already has. A white row and a striped row both step
+   down by exactly the same amount (1.15:1), which is why the stripe survives the
+   hover instead of being erased by it — and why every background above is written
+   as background-color: the shorthand would reset the image and kill the veil. */
+.wi-table tbody tr:hover td,.wi-table tbody tr:focus-within td{
+  background-image:linear-gradient(rgba(43,53,105,.08),rgba(43,53,105,.08))}
+/* the chips are pale enough to dissolve into a veiled row, so they go white and
+   keep their hairline */
+.wi-table tbody tr:hover .chip,.wi-table tbody tr:focus-within .chip{background:#fff}
+.wi-num{font-weight:450;color:var(--navy-700);white-space:nowrap}
+.wi-num small{display:block;font-weight:450;color:var(--grey-400);font-size:var(--fs-xs)}
+.cell-main{font-weight:450;color:var(--grey-900);white-space:nowrap}
+.cell-sub{display:block;font-size:var(--fs-xs);color:var(--grey-600);font-weight:450;margin-top:1px;white-space:nowrap}
+.cell-muted{color:var(--grey-400)}
+.cell-nowrap{white-space:nowrap}
+.asg{display:inline-flex;align-items:center;font-size:var(--fs-sm)}
+.asg .who{font-weight:560;color:var(--grey-800);white-space:nowrap}
+.asg .queue{display:inline-flex;align-items:center;padding:2px 9px;border-radius:var(--r-pill);background:var(--grey-100);color:var(--grey-600);font-size:var(--fs-xs);font-weight:600;white-space:nowrap}
+.wi-table .asg .who{font-weight:450}
+.table-wrap{background:#fff;border:1px solid var(--grey-200);border-radius:var(--r-lg);box-shadow:var(--shadow-sm);overflow-x:auto}
+
+/* Mobile cards */
+.wi-cards{list-style:none;display:none;flex-direction:column;gap:10px}
+.wi-card{
+  background:#fff;border:1px solid var(--grey-200);border-radius:var(--r-lg);
+  box-shadow:var(--shadow-sm);padding:14px 16px;display:block;position:relative;
+}
+.wi-card:active{background:var(--teal-50)}
+/* Card = title block on top, then label-over-value pairs (the "thead / tbody stacked"
+   shape). The grid is auto-fit, so it lands on 2 columns at 375px and 3 from ~414px
+   without a breakpoint of its own. */
+.wi-card .wc-head{display:flex;align-items:flex-start;gap:8px;margin-bottom:4px}
+.wi-card .wc-head .num{flex:1 1 auto;min-width:0}
+/* the WI number is the only thing left in the head, so it carries the card */
+.wi-card .num{font-size:var(--fs-h2);font-weight:660;color:var(--navy-700);letter-spacing:.01em;line-height:1.3}
+.wi-card .wc-head .chip{margin-left:auto;flex:none}
+/* The WI number needs the width more than the status label does: "Verification in
+   progress" is wide enough to push the number onto a second line at 375px. Below the
+   card breakpoint the chip drops to its initialism; the full text stays in title. */
+.chip-abbr{display:none}
+@media(max-width:860px){
+  .wi-card .wc-head .chip .chip-full{display:none}
+  .wi-card .wc-head .chip .chip-abbr{display:inline}
+}
+.wc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));
+  gap:16px;margin-top:10px;padding-top:12px;border-top:1px solid var(--grey-100)}
+.wc-f{min-width:0}
+/* sentence case, not uppercase: "EST. COMPLETION" wraps to two lines in the 3-column
+   layout and knocks the row out of alignment. grey-600, not grey-500 — at 12px the
+   label counts as small text and grey-500 on white is only 4.20:1. */
+.wc-f dt{font-size:var(--fs-xs);font-weight:650;color:var(--grey-600);line-height:1.3}
+.wc-f dd{font-size:var(--fs-sm);color:var(--grey-800);line-height:1.35;margin-top:3px;
+  overflow-wrap:anywhere}
+.wc-f dd strong{font-weight:640;color:var(--grey-900)}
+.wc-f dd b{font-weight:620;color:var(--grey-800)}
+.wc-f dd b.ns{color:var(--grey-400);font-weight:480}
+.wc-f dd:empty::before{content:"—";color:var(--grey-400)}
+/* 7 fields + the button: at 2 columns the last row is 1 field + 1 gap, at 3 columns
+   1 field + 2 gaps — either way the button lands beside the last value instead of
+   claiming a row of its own. */
+/* auto-fit columns mean there is no dependable "last cell", so the button takes a
+   full row of its own at the end and sits at the right edge of it */
+.wc-grid .card-assign{grid-column:1 / -1;margin:0;padding:0;border:0;display:flex;justify-content:flex-end}
+.wc-grid .card-assign .btn-assign{width:auto;padding:8px 16px}
+/* the assignee pill has to sit inside the value slot without stretching the row */
+.wc-f[data-f="asg"] dd .asg{max-width:100%}
+.wc-f[data-f="asg"] dd .queue{max-width:100%;overflow:hidden;text-overflow:ellipsis;display:inline-block}
+.sort-row{display:none;align-items:center;gap:8px;margin-bottom:14px;font-size:var(--fs-sm);color:var(--grey-600)}
+.sort-row select{font-family:inherit;font-size:var(--fs-base);padding:8px 12px;border-radius:var(--r-md);border:1px solid var(--grey-300);background:#fff;color:var(--grey-800);flex:1}
+
+/* pager */
+.pager{display:flex;align-items:center;gap:8px;justify-content:space-between;margin-top:auto;padding-top:18px}
+.pager[hidden]{display:none}   /* nothing to page through */
+.pager .pages{display:flex;align-items:center;gap:6px}
+.page-btn{
+  min-width:36px;height:36px;padding:0 10px;border-radius:var(--r-md);
+  border:1px solid var(--grey-300);background:#fff;color:var(--grey-700);
+  font-size:var(--fs-base);font-weight:580;display:inline-flex;align-items:center;justify-content:center;
+}
+.page-btn[disabled]{color:var(--grey-300);border-color:var(--grey-200)}
+.page-btn.current{background:var(--navy-700);border-color:var(--navy-700);color:#fff}
+.pager .info{font-size:var(--fs-sm);color:var(--grey-500)}
+
+@media(max-width:860px){
+  .table-wrap{display:none}
+  .wi-cards{display:flex}
+  .sort-row{display:flex}
+  .result-count{width:100%;margin-left:0;order:9}
+}
+
+/* ===== Unified dropdown (site-wide) ===== */
+.xselect{position:relative;width:100%}
+.xselect-trigger{
+  width:100%;min-height:46px;display:flex;align-items:center;gap:10px;
+  padding:11px 14px;font-family:inherit;font-size:var(--fs-md);text-align:left;
+  background:#fff;border:1px solid var(--grey-300);border-radius:var(--r-md);color:var(--grey-900);
+  cursor:pointer;transition:border-color .15s ease,box-shadow .15s ease;
+}
+.xselect-trigger:hover{border-color:var(--grey-400)}
+.xselect.open .xselect-trigger,.xselect-trigger:focus-visible{
+  outline:none;border-color:var(--teal-600);box-shadow:0 0 0 3px rgba(0,116,122,.15);
+}
+.xselect-label{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.xselect-label.is-placeholder{color:var(--grey-400)}
+.xselect-chev{width:16px;height:16px;flex:none;color:var(--grey-500);transition:transform .18s ease}
+.xselect.open .xselect-chev{transform:rotate(180deg)}
+.xselect-menu{
+  position:fixed;z-index:9999;
+  background:#fff;border:1px solid var(--grey-200);border-radius:var(--r-md);
+  box-shadow:var(--shadow-lg);padding:6px;max-height:288px;overflow-y:auto;
+  opacity:0;transform:translateY(-4px);pointer-events:none;
+  transition:opacity .12s ease,transform .12s ease;
+}
+.xselect.open .xselect-menu{opacity:1;transform:none;pointer-events:auto}
+.xselect-option{
+  padding:10px 12px;border-radius:var(--r-sm);font-size:var(--fs-md);color:var(--grey-800);
+  cursor:pointer;display:flex;align-items:center;gap:8px;line-height:1.35;white-space:normal;
+}
+.xselect-option:hover{background:var(--teal-50);color:var(--teal-800)}
+.xselect-option.is-selected{background:var(--teal-50);color:var(--teal-800);font-weight:600}
+.xselect-option.is-selected::after{
+  content:"";margin-left:auto;width:16px;height:16px;flex:none;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%23005F64' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 13 4 4L19 7'/%3E%3C/svg%3E") center/contain no-repeat;
+}
+.xselect-option.is-disabled{color:var(--grey-400);cursor:default}
+.xselect-option.is-disabled:hover{background:transparent;color:var(--grey-400)}
+.sort-row .xselect{flex:1}
+.jump-select .xselect{width:auto;min-width:220px}
+
+/* ===== Role switcher (site-wide) ===== */
+.rolesw{position:relative}
+.rolesw-trg{display:flex;align-items:center;gap:10px;padding:5px 12px 5px 5px;border-radius:var(--r-pill);border:1px solid var(--grey-200);background:#fff;cursor:pointer;font-family:inherit;transition:border-color .15s,box-shadow .15s}
+.rolesw-trg:hover{border-color:var(--grey-300)}
+.rolesw.open .rolesw-trg{border-color:var(--navy-400);box-shadow:0 0 0 3px rgba(27,54,93,.12)}
+.rs-av{width:34px;height:34px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;background:var(--chrome-700);color:#fff;font-size:12px;font-weight:700;letter-spacing:.3px}
+.rolesw-trg .rs-meta{text-align:left;line-height:1.2}
+.rolesw-trg .rs-meta strong{font-size:var(--fs-sm);color:var(--grey-900);font-weight:650;display:block}
+.rolesw-trg .rs-meta span{font-size:var(--fs-xs);color:var(--grey-500)}
+.rolesw-chev{width:15px;height:15px;color:var(--grey-400);transition:transform .18s;flex:none}
+.rolesw.open .rolesw-chev{transform:rotate(180deg)}
+.rolesw-menu{position:absolute;top:calc(100% + 10px);right:0;width:300px;background:#fff;border:1px solid var(--grey-200);border-radius:var(--r-lg);box-shadow:var(--shadow-lg);padding:6px;z-index:9999;opacity:0;transform:translateY(-6px) scale(.98);transform-origin:top right;pointer-events:none;transition:opacity .16s ease,transform .16s ease}
+.rolesw.open .rolesw-menu{opacity:1;transform:none;pointer-events:auto}
+.rolesw-head{font-size:10px;font-weight:700;color:var(--grey-400);text-transform:uppercase;letter-spacing:.08em;padding:10px 12px 8px}
+.rolesw-opt{width:100%;display:flex;align-items:center;gap:12px;padding:10px 12px;border:none;background:none;border-radius:var(--r-md);cursor:pointer;text-align:left;font-family:inherit;transition:background .12s}
+.rolesw-opt:hover{background:var(--grey-50)}
+.rolesw-opt.on{background:var(--navy-50)}
+.rolesw-opt .rs-av{width:38px;height:38px;font-size:13px}
+.rolesw-opt .m{min-width:0;flex:1}
+.rolesw-opt .m strong{display:block;font-size:var(--fs-base);color:var(--grey-900);font-weight:640;line-height:1.3}
+.rolesw-opt .m span{font-size:var(--fs-xs);color:var(--grey-500)}
+.rolesw-opt .tick{width:18px;height:18px;color:var(--navy-600);flex:none;opacity:0}
+.rolesw-opt.on .tick{opacity:1}
+
+.rs-av.rs-co{background:var(--role-co)}
+.rs-av.rs-ss{background:var(--role-ss)}
+.rs-av.rs-eng{background:var(--role-eng)}
+
+/* ===== buckets tabs + workflow list ===== */
+.wi-tabs{display:flex;gap:2px;border-bottom:1px solid var(--grey-200);margin-bottom:18px;overflow-x:auto;scrollbar-width:none}
+.wi-tabs::-webkit-scrollbar{display:none}
+.wi-tab{border:none;background:none;font-family:inherit;font-size:var(--fs-md);font-weight:560;color:var(--grey-500);padding:11px 16px;cursor:pointer;display:flex;align-items:center;gap:8px;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.wi-tab:hover{color:var(--grey-800)}
+.wi-tab.active{color:var(--teal-700);border-bottom-color:var(--teal-600);font-weight:660}
+.tab-count{font-size:var(--fs-xs);font-weight:700;background:var(--grey-100);color:var(--grey-600);border-radius:var(--r-pill);padding:1px 8px;min-width:20px;text-align:center}
+.wi-tab.active .tab-count{background:var(--teal-100);color:var(--teal-800)}
+/* five stages, coloured from LTA's own accent set — see :root */
+.chip.st-draft{background:var(--st-draft-bg);color:var(--st-draft-ink)}
+.chip.st-wip{background:var(--st-wip-bg);color:var(--st-wip-ink)}
+.chip.st-ver{background:var(--st-ver-bg);color:var(--st-ver-ink)}
+.chip.st-appr{background:var(--st-appr-bg);color:var(--st-appr-ink)}
+.chip.st-closed{background:var(--st-done-bg);color:var(--st-done-ink)}
+.wi-table th.act-col,.wi-table td.act-col{display:none}
+.wi-table.show-act th.act-col,.wi-table.show-act td.act-col{display:table-cell}
+/* 9 data columns can outrun a narrow window — pin the primary action so it stays reachable */
+.wi-table.show-act th.act-col,.wi-table.show-act td.act-col{position:sticky;right:0;z-index:2}
+.wi-table.show-act th.act-col{background:#d6ddfb}
+.wi-table.show-act td.act-col{background-color:#fff;box-shadow:-9px 0 9px -9px rgba(22,31,38,.22)}
+.btn-assign{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--teal-700);background:var(--teal-700);color:#fff;border-radius:var(--r-md);font-family:inherit;font-size:var(--fs-sm);font-weight:600;padding:6px 12px;cursor:pointer;white-space:nowrap}
+.btn-assign:hover{background:var(--teal-800)}
+.card-assign{margin-top:10px;padding-top:10px;border-top:1px dashed var(--grey-100)}
+.wi-skel{display:none;background:#fff;border:1px solid var(--grey-200);border-radius:var(--r-lg);overflow:hidden;margin-bottom:8px}
+.wi-skel.show{display:block}
+.skel-row{display:flex;align-items:center;gap:18px;padding:17px 18px;border-bottom:1px solid var(--grey-100)}
+.skel-row:last-child{border-bottom:none}
+.skel-bar{height:12px;border-radius:6px;background:linear-gradient(90deg,var(--grey-100) 25%,var(--grey-200) 37%,var(--grey-100) 63%);background-size:400% 100%;animation:skel 1.3s ease infinite}
+.skel-bar.sk-pill{width:84px;height:22px;border-radius:var(--r-pill)}
+@keyframes skel{0%{background-position:100% 0}100%{background-position:-100% 0}}
+.toast{position:fixed;top:76px;left:50%;transform:translateX(-50%) translateY(-12px);background:var(--navy-700);color:#fff;padding:11px 18px;border-radius:var(--r-md);box-shadow:var(--shadow-lg);font-size:var(--fs-sm);font-weight:560;z-index:300;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;display:flex;align-items:center;gap:8px}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ===== Filter & sort drawer ===== */
+.filter-bd{position:fixed;inset:0;background:rgba(22,31,38,.45);z-index:200;opacity:0;pointer-events:none;transition:opacity .2s}
+.filter-bd.show{opacity:1;pointer-events:auto}
+.filter-drawer{position:fixed;top:0;right:0;bottom:0;width:min(430px,100%);background:#fff;z-index:201;transform:translateX(100%);transition:transform .25s ease;display:flex;flex-direction:column;box-shadow:var(--shadow-lg)}
+.filter-bd.show .filter-drawer{transform:none}
+.fd-head{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--grey-200)}
+.fd-head h2{font-size:var(--fs-h2);font-weight:680;color:var(--grey-900)}
+.fd-close{width:36px;height:36px;border-radius:var(--r-md);border:none;background:var(--grey-100);color:var(--grey-600);cursor:pointer;font-size:15px}
+.fd-close:hover{background:var(--grey-200)}
+.fd-body{flex:1;overflow-y:auto;padding:8px 20px 16px}
+.fd-sort{padding:14px 0 4px}
+@media(min-width:861px){.fd-sort{display:none}}   /* desktop sorts from the table header instead */
+.sortpills button .dir{margin-left:6px;font-weight:800}
+.fd-grouplbl{font-size:var(--fs-xs);font-weight:650;color:var(--grey-400);text-transform:uppercase;letter-spacing:.05em;padding:18px 0 2px;border-top:1px solid var(--grey-100);margin-top:6px}
+.fd-grouplbl .hint{display:block;text-transform:none;letter-spacing:0;font-weight:450;color:var(--grey-400);font-size:var(--fs-xs);margin-top:3px}
+/* Sector / Sub-sector / Element type live inside another column's cell, so they nest under it */
+.fd-sec.child{position:relative;padding-left:20px}
+.fd-sec.child::before{content:"";position:absolute;left:7px;top:0;bottom:0;width:1.5px;background:var(--grey-200)}
+.fd-sec.child .fd-acc{padding:11px 0}
+.fd-sec.child .fd-acc .l{font-size:var(--fs-sm);font-weight:560;color:var(--grey-600)}
+.fd-label{font-size:var(--fs-sm);font-weight:660;color:var(--grey-800);margin:0 0 10px;display:block}
+.sortpills{display:flex;flex-wrap:wrap;gap:8px}
+.sortpills button{border:1px solid var(--grey-300);background:#fff;color:var(--grey-700);border-radius:var(--r-pill);font-family:inherit;font-size:var(--fs-sm);font-weight:520;padding:7px 14px;cursor:pointer}
+.sortpills button:hover{border-color:var(--grey-400)}
+.sortpills button.on{background:var(--navy-600);border-color:var(--navy-600);color:#fff;font-weight:600}
+.fd-acc{border:none;background:none;width:100%;display:flex;align-items:center;justify-content:space-between;padding:14px 0;cursor:pointer;font-family:inherit}
+.fd-acc .l{font-size:var(--fs-base);font-weight:600;color:var(--grey-800);display:flex;align-items:center;gap:9px}
+.fd-acc .cnt{font-size:var(--fs-xs);font-weight:700;background:var(--teal-100);color:var(--teal-800);border-radius:var(--r-pill);padding:1px 8px}
+.fd-acc .chev{width:16px;height:16px;color:var(--grey-400);transition:transform .18s}
+.fd-acc.open .chev{transform:rotate(180deg)}
+.fd-opts{display:none;padding:0 0 16px}
+.fd-acc.open + .fd-opts{display:block}
+.fd-chips{display:flex;flex-wrap:wrap;gap:8px}
+.fd-search{width:100%;margin:0 0 10px;padding:8px 12px;border:1px solid var(--grey-300);border-radius:var(--r-md);font-family:inherit;font-size:var(--fs-sm);color:var(--grey-800);outline:none}
+.fd-search:focus{border-color:var(--teal-600)}
+.fd-none{font-size:var(--fs-sm);color:var(--grey-400);padding:4px 2px}
+.fd-more{border:none;background:none;color:var(--teal-700);font-family:inherit;font-size:var(--fs-sm);font-weight:600;cursor:pointer;padding:8px 2px 0}
+.fd-range{display:flex;align-items:center;gap:8px;margin-top:10px}
+.fd-range input{flex:1;min-width:0;padding:8px 10px;border:1px solid var(--grey-300);border-radius:var(--r-md);font-family:inherit;font-size:var(--fs-sm);color:var(--grey-800);outline:none}
+.fd-range input:focus{border-color:var(--teal-600)}
+.fd-range .sep{color:var(--grey-400);font-size:var(--fs-sm)}
+.fd-chip{border:1px solid var(--grey-300);background:#fff;color:var(--grey-700);border-radius:var(--r-pill);font-family:inherit;font-size:var(--fs-sm);font-weight:520;padding:7px 14px;cursor:pointer}
+.fd-chip:hover{border-color:var(--grey-400)}
+/* selected = outline, not fill. A filled chip has to throw away whatever colour it
+   was carrying, and for the status options that colour IS the content. */
+.fd-chip.on{background:#e7ecff;border-color:var(--teal-700);color:var(--teal-700);font-weight:600}
+/* the Status facet reuses the five stage colours the table chips already use */
+.fd-chip.st-draft{background:var(--st-draft-bg);border-color:transparent;color:var(--st-draft-ink)}
+.fd-chip.st-wip{background:var(--st-wip-bg);border-color:transparent;color:var(--st-wip-ink)}
+.fd-chip.st-ver{background:var(--st-ver-bg);border-color:transparent;color:var(--st-ver-ink)}
+.fd-chip.st-appr{background:var(--st-appr-bg);border-color:transparent;color:var(--st-appr-ink)}
+.fd-chip.st-closed{background:var(--st-done-bg);border-color:transparent;color:var(--st-done-ink)}
+/* Same selector as .fd-chip.on above, repeated on purpose: it has to come after the
+   status block to win the border back — .st-* sets border-color:transparent and the
+   two have equal weight. A plain 1px edge; doubling it read as too heavy. */
+.fd-chip.on{border-color:var(--teal-700)}
+
+/* facet header row: the label button stretches, Clear sits right, chevron pinned to the
+   edge. The chevron leaves the button so Clear can be a real <button> — nesting one
+   inside another is invalid HTML. The whole row toggles, so nothing is lost. */
+.fd-hd{display:flex;align-items:center;gap:10px;cursor:pointer}
+.fd-hd .fd-acc{flex:1;padding-right:0}
+.fd-clear{border:none;background:none;padding:0;font-family:inherit;font-size:var(--fs-sm);
+  font-weight:600;color:var(--teal-700);cursor:pointer;flex:none}
+.fd-clear:disabled{color:var(--grey-300);cursor:default}
+.fd-hd .chev-slot{flex:none;display:flex;color:var(--grey-400)}
+.fd-hd .chev-slot .chev{width:16px;height:16px;transition:transform .18s}
+.fd-sec.open .chev-slot .chev{transform:rotate(180deg)}
+.fd-sec.open .fd-opts{display:block}
+/* "All" leads the chip list — one tap instead of ticking every option */
+.fd-chip.fd-all{font-weight:640;border-style:dashed}
+.fd-chip.fd-all.on{border-style:solid}
+/* "All" reads differently from a number: every option ticked excludes nothing */
+.fd-acc .cnt.all{background:var(--grey-100);color:var(--grey-600)}
+.fd-foot{display:flex;gap:10px;align-items:center;padding:14px 20px;border-top:1px solid var(--grey-200)}
+.fd-foot .clear{border:none;background:none;color:var(--teal-700);font-family:inherit;font-size:var(--fs-base);font-weight:600;cursor:pointer;padding:8px;margin-right:auto}
+.fd-foot .apply{flex:0 0 50%;justify-content:center;min-height:46px}
+.clear-filters{border:none;background:none;color:var(--teal-700);font-family:inherit;font-size:var(--fs-sm);font-weight:600;cursor:pointer;margin-left:12px;display:none}
+</style>
+<style>
+/* Demo: prototype-version switcher inside the role menu */
+.rolesw-sep{height:1px;background:var(--grey-200);margin:6px 8px}
+</style>
+<style>
+/* chrome parity with mwi-wi-workflow_layouta */
+/* the old .brand overrides went with the desktop topbar — the mobile bar sizes its own logo */
+.ni-chev{width:16px;height:16px;flex:none;margin-left:auto;color:var(--grey-400);transform:rotate(180deg)}
+@media(min-width:1021px){body.nav-collapsed .ni-chev{display:none}}
+</style>
+<style>
+/* ===== Rounded design language — parity with the navy build =====
+   --r-lg deliberately stays 14px: it is what draws .card, .summary-strip,
+   .table-wrap, .wi-card and .wi-skel, and those read badly when round. */
+:root{--r-sm:14px;--r-md:18px}
+.control{border-radius:10px;padding-left:16px;padding-right:16px}
+textarea.control{border-radius:10px}
+/* This page has no .control at all — its fields are the toolbar search, the per-facet
+   search and the date range, all on --r-md. They are still fields, so they follow.
+   The token itself must NOT move: --r-md also draws icon buttons, the toast, the
+   drawer panels and .btn-assign. */
+.search-box,.fd-search,.fd-range input{border-radius:10px}
+select.control{background-position:right 16px center}
+.btn{border-radius:999px}
+.xselect-trigger{border-radius:10px;padding-left:16px}
+.nav-item{border-radius:999px}
+
+/* ===== Side menu metrics — must stay identical to mwi-workflow.html =====
+   The two pages build the nav from different markup (this page's sub items are plain
+   .nav-item.sub, the workflow page uses a collapsible .nav-sub-list), so the row heights
+   used to drift by 1–3px and every item below the group shifted when you switched pages.
+   Pinning both ends to the same numbers removes the jump. */
+.nav-item{min-height:43px}
+.nav-item.sub{min-height:38px;margin-bottom:3px}
+/* an expanded group already says where you are through its highlighted child, so the
+   parent drops the whole active treatment — fill, white text and white icon.
+   :not(:hover) keeps the hover state alive. */
+.nav-group>.nav-item.active:not(:hover){background:none;color:var(--chrome-ink);font-weight:600}
+/* the icon keeps its section colour — that is identity, not an "active" emphasis */
+
+/* ===== Bucket tabs as pills ===== */
+.wi-tabs{gap:8px;border-bottom:none;margin-bottom:18px}
+.wi-tab{border-radius:999px;padding:9px 16px;border-bottom:none;margin-bottom:0}
+.wi-tab:hover{background:var(--grey-100);color:var(--grey-900)}
+.wi-tab.active{background:var(--teal-600);color:#fff;font-weight:660}
+/* white pill + primary ink: a translucent count on the filled tab drops under 4.5:1 */
+.wi-tab.active .tab-count{background:#fff;color:var(--teal-700)}
+</style>
+<link rel="stylesheet" href="lta-theme.css">
+</head>
+<body>
+
+<header class="topbar">
+  <button class="icon-btn menu-btn" id="menu-btn" aria-label="Open menu" aria-expanded="false">
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+  </button>
+  <div class="brand">
+    <img class="brand-logo-img" src="logo_color.png" alt="Land Transport Authority — We Keep Your World Moving">
+    <div class="brand-name">Road Maintenance Workflow Platform</div>
+  </div>
+  <div class="topbar-spacer"></div>
+</header>
+
+<!-- ============ Sidebar (desktop) ============ -->
+<nav class="sidebar" aria-label="Main navigation">
+  <div class="sb-brand">
+    <img src="logo_color.png" alt="Land Transport Authority — Road Maintenance Workflow Platform">
+  </div>
+  <a class="nav-item" data-sec="overview" href="index.html"><svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 3l9 6.5V21a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1Z"/><path d="M9 22V12h6v10"/></svg>Overview</a>
+<div class="wi-nav-group"><button type="button" class="nav-item wi-nav-toggle" aria-expanded="true" aria-controls="wi-submenu"><svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h6"/></svg><span class="wi-group-label">Work instruction</span><svg class="wi-nav-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></button><div id="wi-submenu"><a class="wi-sub-link current" href="mwi-list.html">Maintenance WI</a><a class="wi-sub-link" aria-disabled="true" tabindex="-1">Inspection WI</a><a class="wi-sub-link" aria-disabled="true" tabindex="-1">WI template</a></div></div>
+  <a class="nav-item" data-sec="dash" aria-disabled="true" tabindex="-1"><svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21.2 15.9A10 10 0 1 1 8 2.8"/><path d="M22 12A10 10 0 0 0 12 2v10Z"/></svg>Dashboard</a>
+  <a class="nav-item" data-sec="rep" aria-disabled="true" tabindex="-1"><svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/></svg>Reports</a>
+  <a class="nav-item" data-sec="user" aria-disabled="true" tabindex="-1"><svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>User</a>
+  <a class="nav-item" data-sec="sector" aria-disabled="true" tabindex="-1"><svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>Sector</a>
+  <a class="nav-item" data-sec="contract" aria-disabled="true" tabindex="-1"><svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4z"/><path d="M8 9h8M8 13h5"/></svg>Contract</a>
+  <a class="nav-item" data-sec="asset" aria-disabled="true" tabindex="-1"><svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.3 9 5.2M21 8l-9-5-9 5v8l9 5 9-5Z"/></svg>Asset inventory</a>
+  <a class="nav-item" data-sec="config" aria-disabled="true" tabindex="-1"><svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>Configuration</a>
+  <div class="sb-foot">
+  <button class="nav-item sb-notif" type="button" aria-label="Notifications — 26 notifications">
+    <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>Notifications
+    <span class="sb-badge">26</span>
+  </button>
+  <div class="rolesw" id="rolesw">
+    <button class="rolesw-trg" id="rolesw-trg" aria-haspopup="true" aria-expanded="false">
+      <span class="rs-av rs-co" id="rs-ini">DC</span>
+      <span class="rs-meta"><strong id="rs-name">DEV CO01</strong><span id="rs-role">Contract Officer</span></span>
+      <svg class="rolesw-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+    </button>
+    <div class="rolesw-menu" id="rolesw-menu">
+      <div class="rolesw-head">Switch role</div>
+      <button class="rolesw-opt" data-role="co"><span class="rs-av rs-co">DC</span><span class="m"><strong>DEV CO01</strong><span>Contract Officer</span></span><svg class="tick" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4L19 7"/></svg></button>
+      <button class="rolesw-opt" data-role="ss"><span class="rs-av rs-ss">DT</span><span class="m"><strong>DEV TR388SS01</strong><span>Site Supervisor</span></span><svg class="tick" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4L19 7"/></svg></button>
+      <button class="rolesw-opt" data-role="eng"><span class="rs-av rs-eng">DT</span><span class="m"><strong>DEV TR388ENG01</strong><span>Engineer</span></span><svg class="tick" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4L19 7"/></svg></button>
+
+    </div>
+  </div>
+  </div>
+</nav>
+<div class="backdrop" id="backdrop"></div>
+<button id="navToggle" class="nav-toggle" aria-label="Collapse navigation" aria-expanded="true"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 3v18"/></svg></button>
+
+<main class="main">
+
+  <div class="page-head">
+    <div>
+      <h1>Maintenance work instructions</h1>
+      <p class="page-sub">Track work instructions, review progress and manage your assigned work.</p>
+    </div>
+    <div class="head-actions">
+      <a class="btn btn-primary" href="mwi-create.html" title="New WI" style="text-decoration:none">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+        <span class="bl">New WI</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="wi-tabs" role="tablist" aria-label="Work instruction buckets">
+    <button class="wi-tab active" data-bucket="todo" type="button">To do <span class="tab-count" id="c-todo">0</span></button>
+    <button class="wi-tab" data-bucket="inprogress" type="button">In progress <span class="tab-count" id="c-inprogress">0</span></button>
+    <button class="wi-tab" data-bucket="submitted" type="button">Submitted <span class="tab-count" id="c-submitted">0</span></button>
+  </div>
+
+  <div class="wi-content">
+  <div class="list-toolbar">
+    <label class="search-box">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <input type="search" placeholder="Search WI number, road or asset…" aria-label="Search work instructions">
+    </label>
+    <button class="btn btn-ghost filter-btn" id="btnFilter" type="button" title="Filter" aria-label="Filter">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M7 12h10M10 17h4"/></svg>
+    </button>
+  </div>
+
+  <div class="table-wrap">
+    <table class="wi-table">
+      <thead>
+        <tr>
+          <th><button type="button" data-sk="wi">WI number <svg class="s-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path class="up" d="M7 9l5-5 5 5"/><path class="dn" d="m7 15 5 5 5-5"/></svg></button></th>
+          <th><button type="button" data-sk="fstatus">Status <svg class="s-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path class="up" d="M7 9l5-5 5 5"/><path class="dn" d="m7 15 5 5 5-5"/></svg></button></th>
+          <th><button type="button" data-sk="froad">Road <svg class="s-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path class="up" d="M7 9l5-5 5 5"/><path class="dn" d="m7 15 5 5 5-5"/></svg></button></th>
+          <th><button type="button" data-sk="fasset">Asset <svg class="s-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path class="up" d="M7 9l5-5 5 5"/><path class="dn" d="m7 15 5 5 5-5"/></svg></button></th>
+          <th><button type="button" data-sk="fdefect">Defect type <svg class="s-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path class="up" d="M7 9l5-5 5 5"/><path class="dn" d="m7 15 5 5 5-5"/></svg></button></th>
+          <th><button type="button" data-sk="fworktype">Work type <svg class="s-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path class="up" d="M7 9l5-5 5 5"/><path class="dn" d="m7 15 5 5 5-5"/></svg></button></th>
+          <th><button type="button" data-sk="fest">Est. completion <svg class="s-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path class="up" d="M7 9l5-5 5 5"/><path class="dn" d="m7 15 5 5 5-5"/></svg></button></th>
+          <th><button type="button" data-sk="fassign">Assign to <svg class="s-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path class="up" d="M7 9l5-5 5 5"/><path class="dn" d="m7 15 5 5 5-5"/></svg></button></th>
+          <th><button type="button" data-sk="fupd">Last updated <svg class="s-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path class="up" d="M7 9l5-5 5 5"/><path class="dn" d="m7 15 5 5 5-5"/></svg></button></th>
+          <th class="act-col">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+      <tr tabindex="0" class="row-link" data-href="mwi-workflow.html" data-dept="RRFM" data-inst="5 Jun 2026">
+        <td class="wi-num">RMWP-TR388-RRFM-M-17</td>
+        <td><span class="chip chip-sm chip-draft">Draft</span></td>
+        <td><span class="cell-main">Adis Road</span><span class="cell-sub">Sector NW3 · CS4</span></td>
+        <td><span class="cell-main">Bollard</span><span class="cell-sub">Bollard</span></td>
+        <td>Hole</td>
+        <td>Simplified item</td>
+        <td><span class="cell-muted">Not set</span></td>
+        <td class="asg-cell"></td>
+        <td class="cell-nowrap">5 Jun 2026</td>
+      </tr>
+      <tr tabindex="0" class="row-link" data-href="mwi-workflow.html" data-dept="RRFM" data-inst="2 Jun 2026">
+        <td class="wi-num">RMWP-TR388-RRFM-M-7</td>
+        <td><span class="chip chip-sm chip-draft">Draft</span></td>
+        <td><span class="cell-main">Admiralty Drive</span><span class="cell-sub">Sector NW2 · NW1</span></td>
+        <td><span class="cell-main">Bollard</span><span class="cell-sub">Bollard</span></td>
+        <td>Hole</td>
+        <td>Simplified item</td>
+        <td>29 Jun 2026</td>
+        <td class="asg-cell"></td>
+        <td class="cell-nowrap">15 Jul 2026</td>
+      </tr>
+      <tr tabindex="0" class="row-link" data-href="mwi-workflow.html" data-dept="RRFM" data-inst="2 Jun 2026">
+        <td class="wi-num">RMWP-TR388-RRFM-M-13</td>
+        <td><span class="chip chip-sm chip-draft">Draft</span></td>
+        <td><span class="cell-main">Admiralty Lane</span><span class="cell-sub">Sector NW2 · NW1</span></td>
+        <td><span class="cell-main">Traffic sign</span><span class="cell-sub">Signage</span></td>
+        <td>No stopping sign</td>
+        <td>Works order — accident</td>
+        <td>30 Jun 2026</td>
+        <td class="asg-cell"></td>
+        <td class="cell-nowrap">16 Jul 2026</td>
+      </tr>
+      <tr tabindex="0" class="row-link" data-href="mwi-workflow.html" data-dept="RRFM" data-inst="2 Jun 2026">
+        <td class="wi-num">RMWP-TR388-RRFM-M-12</td>
+        <td><span class="chip chip-sm chip-draft">Draft</span></td>
+        <td><span class="cell-main">Admiralty Lane</span><span class="cell-sub">Sector NW2 · NW1</span></td>
+        <td><span class="cell-main">Railing</span><span class="cell-sub">Railing</span></td>
+        <td>Damaged</td>
+        <td>Works order — accident</td>
+        <td>30 Jun 2026</td>
+        <td class="asg-cell"></td>
+        <td class="cell-nowrap">16 Jul 2026</td>
+      </tr>
+      <tr tabindex="0" class="row-link" data-href="mwi-workflow.html" data-dept="RRFM" data-inst="2 Jul 2026">
+        <td class="wi-num">RMWP-TR388-RRFM-M-24</td>
+        <td><span class="chip chip-sm">Work in progress</span></td>
+        <td><span class="cell-main">Admiralty Drive</span><span class="cell-sub">Sector NW2 · NW1</span></td>
+        <td><span class="cell-muted">Not selected yet</span></td>
+        <td><span class="cell-muted">Not set</span></td>
+        <td>Simplified item</td>
+        <td>8 Jul 2026</td>
+        <td class="asg-cell"></td>
+        <td class="cell-nowrap">2 Jul 2026</td>
+      </tr>
+      <tr tabindex="0" class="row-link" data-href="mwi-workflow.html" data-dept="RRFM" data-inst="10 Jul 2026">
+        <td class="wi-num">RMWP-TR388-RRFM-M-27</td>
+        <td><span class="chip chip-sm">Work in progress</span></td>
+        <td><span class="cell-main">Admiralty Drive</span><span class="cell-sub">Sector NW2 · NW1</span></td>
+        <td><span class="cell-main">Carriageway</span><span class="cell-sub">Flexible pavement</span></td>
+        <td>Depression</td>
+        <td>Simplified item</td>
+        <td>30 Jul 2026</td>
+        <td class="asg-cell"></td>
+        <td class="cell-nowrap">10 Jul 2026</td>
+      </tr>
+      <tr tabindex="0" class="row-link" data-href="mwi-workflow.html" data-dept="RRFM" data-inst="2 Jun 2026">
+        <td class="wi-num">RMWP-TR388-RRFM-M-8</td>
+        <td><span class="chip chip-sm">Verification in progress</span></td>
+        <td><span class="cell-main">Adis Road</span><span class="cell-sub">Sector NW3 · CS4</span></td>
+        <td><span class="cell-main">Bollard</span><span class="cell-sub">Bollard</span></td>
+        <td>Hole</td>
+        <td>Works order — accident</td>
+        <td>2 Jun 2026</td>
+        <td class="asg-cell"></td>
+        <td class="cell-nowrap">15 Jul 2026</td>
+      </tr>
+      <tr tabindex="0" class="row-link" data-href="mwi-workflow.html" data-dept="RRFM" data-inst="5 Jun 2026">
+        <td class="wi-num">RMWP-TR388-RRFM-M-14</td>
+        <td><span class="chip chip-sm">Approval in progress</span></td>
+        <td><span class="cell-main">Adis Road</span><span class="cell-sub">Sector NW3 · CS4</span></td>
+        <td><span class="cell-main">Bollard</span><span class="cell-sub">Bollard</span></td>
+        <td>Hole</td>
+        <td>Outcome-based defect</td>
+        <td>7 Jun 2026</td>
+        <td class="asg-cell"></td>
+        <td class="cell-nowrap">15 Jul 2026</td>
+      </tr>
+      <tr tabindex="0" class="row-link" data-href="mwi-workflow.html" data-dept="PATH" data-inst="3 Jun 2026">
+        <td class="wi-num">RMWP-TR388-PATH-M-4</td>
+        <td><span class="chip chip-sm">Approved & closed</span></td>
+        <td><span class="cell-main">Palm Drive</span><span class="cell-sub">Sector NW2 · NW2</span></td>
+        <td><span class="cell-main">Footpath</span><span class="cell-sub">Pavement surface</span></td>
+        <td>Cracked surface</td>
+        <td>Works order — accident</td>
+        <td>15 Jun 2026</td>
+        <td class="asg-cell"></td>
+        <td class="cell-nowrap">3 Jun 2026</td>
+      </tr>
+      <tr tabindex="0" class="row-link" data-href="mwi-workflow.html" data-dept="PATH" data-inst="3 Jun 2026">
+        <td class="wi-num">RMWP-TR388-PATH-M-1</td>
+        <td><span class="chip chip-sm">Verification in progress</span></td>
+        <td><span class="cell-main">Palm Drive</span><span class="cell-sub">Sector NW2 · NW2</span></td>
+        <td><span class="cell-main">Footpath</span><span class="cell-sub">Pavement surface</span></td>
+        <td>Cracked surface</td>
+        <td>Simplified item</td>
+        <td>16 Jun 2026</td>
+        <td class="asg-cell"></td>
+        <td class="cell-nowrap">3 Jun 2026</td>
+      </tr>
+      <tr tabindex="0" class="row-link" data-href="mwi-workflow.html" data-dept="RRFM" data-inst="20 Jul 2026">
+        <td class="wi-num">RMWP-TR388-RRFM-M-31</td>
+        <td><span class="chip chip-sm chip-draft">Draft</span></td>
+        <td><span class="cell-main">Alexandra Road</span><span class="cell-sub">Sector SW1 · SW1</span></td>
+        <td><span class="cell-main">Kerb</span><span class="cell-sub">Kerb line</span></td>
+        <td>Damaged</td>
+        <td>Simplified item</td>
+        <td>12 Aug 2026</td>
+        <td class="asg-cell"></td>
+        <td class="cell-nowrap">20 Jul 2026</td>
+      </tr>
+      <tr tabindex="0" class="row-link" data-href="mwi-workflow.html" data-dept="CFM" data-inst="18 Jul 2026">
+        <td class="wi-num">RMWP-TR388-CFM-M-2</td>
+        <td><span class="chip chip-sm chip-draft">Draft</span></td>
+        <td><span class="cell-main">Balestier Road</span><span class="cell-sub">Sector NE1 · NE1</span></td>
+        <td><span class="cell-main">Road marking</span><span class="cell-sub">Line marking</span></td>
+        <td>Faded</td>
+        <td>Works order — accident</td>
+        <td>5 Aug 2026</td>
+        <td class="asg-cell"></td>
+        <td class="cell-nowrap">22 Jul 2026</td>
+      </tr>
+      <tr tabindex="0" class="row-link" data-href="mwi-workflow.html" data-dept="BDG" data-inst="12 Jul 2026">
+        <td class="wi-num">RMWP-TR388-BDG-M-9</td>
+        <td><span class="chip chip-sm">Work in progress</span></td>
+        <td><span class="cell-main">Bukit Timah Road</span><span class="cell-sub">Sector NW1 · NW1</span></td>
+        <td><span class="cell-main">Railing</span><span class="cell-sub">Railing</span></td>
+        <td>Damaged</td>
+        <td>Outcome-based defect</td>
+        <td>28 Jul 2026</td>
+        <td class="asg-cell"></td>
+        <td class="cell-nowrap">23 Jul 2026</td>
+      </tr>
+      <tr tabindex="0" class="row-link" data-href="mwi-workflow.html" data-dept="RRFM" data-inst="15 Jul 2026">
+        <td class="wi-num">RMWP-TR388-RRFM-M-33</td>
+        <td><span class="chip chip-sm">Work in progress</span></td>
+        <td><span class="cell-main">Changi Road</span><span class="cell-sub">Sector SE2 · SE2</span></td>
+        <td><span class="cell-main">Carriageway</span><span class="cell-sub">Flexible pavement</span></td>
+        <td>Depression</td>
+        <td>Simplified item</td>
+        <td>3 Aug 2026</td>
+        <td class="asg-cell"></td>
+        <td class="cell-nowrap">21 Jul 2026</td>
+      </tr>
+      <tr tabindex="0" class="row-link" data-href="mwi-workflow.html" data-dept="PATH" data-inst="14 Jul 2026">
+        <td class="wi-num">RMWP-TR388-PATH-M-11</td>
+        <td><span class="chip chip-sm">Work in progress</span></td>
+        <td><span class="cell-main">Clementi Road</span><span class="cell-sub">Sector SW2 · SW2</span></td>
+        <td><span class="cell-main">Footpath</span><span class="cell-sub">Pavement surface</span></td>
+        <td>Uneven surface</td>
+        <td>Works order — accident</td>
+        <td>30 Jul 2026</td>
+        <td class="asg-cell"></td>
+        <td class="cell-nowrap">24 Jul 2026</td>
+      </tr>
+      <tr tabindex="0" class="row-link" data-href="mwi-workflow.html" data-dept="RRFM" data-inst="1 Jul 2026">
+        <td class="wi-num">RMWP-TR388-RRFM-M-35</td>
+        <td><span class="chip chip-sm">Verification in progress</span></td>
+        <td><span class="cell-main">Dunearn Road</span><span class="cell-sub">Sector NW1 · NW2</span></td>
+        <td><span class="cell-main">Drain</span><span class="cell-sub">Drain grating</span></td>
+        <td>Choked</td>
+        <td>Simplified item</td>
+        <td>22 Jul 2026</td>
+        <td class="asg-cell"></td>
+        <td class="cell-nowrap">19 Jul 2026</td>
+      </tr>
+      <tr tabindex="0" class="row-link" data-href="mwi-workflow.html" data-dept="CFM" data-inst="5 Jul 2026">
+        <td class="wi-num">RMWP-TR388-CFM-M-5</td>
+        <td><span class="chip chip-sm">Verification in progress</span></td>
+        <td><span class="cell-main">Eu Tong Sen Street</span><span class="cell-sub">Sector SE · SE1</span></td>
+        <td><span class="cell-main">Traffic sign</span><span class="cell-sub">Signage</span></td>
+        <td>Missing</td>
+        <td>Works order — accident</td>
+        <td>25 Jul 2026</td>
+        <td class="asg-cell"></td>
+        <td class="cell-nowrap">18 Jul 2026</td>
+      </tr>
+      <tr tabindex="0" class="row-link" data-href="mwi-workflow.html" data-dept="RRFM" data-inst="28 Jun 2026">
+        <td class="wi-num">RMWP-TR388-RRFM-M-38</td>
+        <td><span class="chip chip-sm">Approval in progress</span></td>
+        <td><span class="cell-main">Farrer Road</span><span class="cell-sub">Sector SW · SW2</span></td>
+        <td><span class="cell-main">Bollard</span><span class="cell-sub">Bollard</span></td>
+        <td>Damaged</td>
+        <td>Simplified item</td>
+        <td>18 Jul 2026</td>
+        <td class="asg-cell"></td>
+        <td class="cell-nowrap">17 Jul 2026</td>
+      </tr>
+      <tr tabindex="0" class="row-link" data-href="mwi-workflow.html" data-dept="BDG" data-inst="30 Jun 2026">
+        <td class="wi-num">RMWP-TR388-BDG-M-12</td>
+        <td><span class="chip chip-sm">Approval in progress</span></td>
+        <td><span class="cell-main">Havelock Road</span><span class="cell-sub">Sector SE1 · SE1</span></td>
+        <td><span class="cell-main">Railing</span><span class="cell-sub">Railing</span></td>
+        <td>Cracked surface</td>
+        <td>Outcome-based defect</td>
+        <td>20 Jul 2026</td>
+        <td class="asg-cell"></td>
+        <td class="cell-nowrap">16 Jul 2026</td>
+      </tr>
+      <tr tabindex="0" class="row-link" data-href="mwi-workflow.html" data-dept="RRFM" data-inst="20 Jun 2026">
+        <td class="wi-num">RMWP-TR388-RRFM-M-40</td>
+        <td><span class="chip chip-sm">Approved & closed</span></td>
+        <td><span class="cell-main">Keppel Road</span><span class="cell-sub">Sector SE2 · SE2</span></td>
+        <td><span class="cell-main">Carriageway</span><span class="cell-sub">Flexible pavement</span></td>
+        <td>Hole</td>
+        <td>Works order — accident</td>
+        <td>10 Jul 2026</td>
+        <td class="asg-cell"></td>
+        <td class="cell-nowrap">12 Jul 2026</td>
+      </tr>
+      <tr tabindex="0" class="row-link" data-href="mwi-workflow.html" data-dept="PATH" data-inst="22 Jul 2026">
+        <td class="wi-num">RMWP-TR388-PATH-M-14</td>
+        <td><span class="chip chip-sm chip-draft">Draft</span></td>
+        <td><span class="cell-main">Lornie Road</span><span class="cell-sub">Sector NA1 · NA1</span></td>
+        <td><span class="cell-main">Footpath</span><span class="cell-sub">Pavement surface</span></td>
+        <td>Cracked surface</td>
+        <td>Simplified item</td>
+        <td>15 Aug 2026</td>
+        <td class="asg-cell"></td>
+        <td class="cell-nowrap">22 Jul 2026</td>
+      </tr>
+      <tr tabindex="0" class="row-link" data-href="mwi-workflow.html" data-dept="RRFM" data-inst="16 Jul 2026">
+        <td class="wi-num">RMWP-TR388-RRFM-M-42</td>
+        <td><span class="chip chip-sm">Work in progress</span></td>
+        <td><span class="cell-main">Marina Boulevard</span><span class="cell-sub">Sector EXP · EXP</span></td>
+        <td><span class="cell-main">Streetlight</span><span class="cell-sub">Lamp post</span></td>
+        <td>Damaged</td>
+        <td>Works order — accident</td>
+        <td>8 Aug 2026</td>
+        <td class="asg-cell"></td>
+        <td class="cell-nowrap">25 Jul 2026</td>
+      </tr>
+      <tr tabindex="0" class="row-link" data-href="mwi-workflow.html" data-dept="CFM" data-inst="8 Jul 2026">
+        <td class="wi-num">RMWP-TR388-CFM-M-8</td>
+        <td><span class="chip chip-sm">Verification in progress</span></td>
+        <td><span class="cell-main">Newton Road</span><span class="cell-sub">Sector NE2 · NE2</span></td>
+        <td><span class="cell-main">Road marking</span><span class="cell-sub">Line marking</span></td>
+        <td>Faded</td>
+        <td>Simplified item</td>
+        <td>26 Jul 2026</td>
+        <td class="asg-cell"></td>
+        <td class="cell-nowrap">20 Jul 2026</td>
+      </tr>
+      <tr tabindex="0" class="row-link" data-href="mwi-workflow.html" data-dept="RRFM" data-inst="12 Jun 2026">
+        <td class="wi-num">RMWP-TR388-RRFM-M-45</td>
+        <td><span class="chip chip-sm">Approved & closed</span></td>
+        <td><span class="cell-main">Orchard Road</span><span class="cell-sub">Sector NE4 · NE4</span></td>
+        <td><span class="cell-main">Kerb</span><span class="cell-sub">Kerb line</span></td>
+        <td>Damaged</td>
+        <td>Outcome-based defect</td>
+        <td>5 Jul 2026</td>
+        <td class="asg-cell"></td>
+        <td class="cell-nowrap">8 Jul 2026</td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <ul class="wi-cards">
+    <li><a class="wi-card" href="mwi-workflow.html" data-dept="RRFM" data-inst="5 Jun 2026">
+      <div class="wc-head"><span class="num">RMWP-TR388-RRFM-M-17</span><span class="chip chip-sm chip-draft">Draft</span></div>
+      <dl class="wc-grid">
+        <div class="wc-f" data-f="road"><dt>Road</dt><dd><strong>Adis Road</strong> · Sector NW3 · CS4</dd></div>
+        <div class="wc-f" data-f="asset"><dt>Asset</dt><dd><strong>Bollard</strong> · Bollard</dd></div>
+        <div class="wc-f" data-f="def"><dt>Defect type</dt><dd class="m-def" data-def="Hole">Hole</dd></div>
+        <div class="wc-f" data-f="wt"><dt>Work type</dt><dd>Simplified item</dd></div>
+        <div class="wc-f" data-f="est"><dt>Est. completion</dt><dd><b class="ns">Not set</b></dd></div>
+        <div class="wc-f" data-f="asg"><dt>Assign to</dt><dd class="cf-asg"></dd></div>
+        <div class="wc-f" data-f="upd"><dt>Last updated</dt><dd><b>5 Jun 2026</b></dd></div>
+      </dl>
+    </a></li>
+    <li><a class="wi-card" href="mwi-workflow.html" data-dept="RRFM" data-inst="2 Jun 2026">
+      <div class="wc-head"><span class="num">RMWP-TR388-RRFM-M-7</span><span class="chip chip-sm chip-draft">Draft</span></div>
+      <dl class="wc-grid">
+        <div class="wc-f" data-f="road"><dt>Road</dt><dd><strong>Admiralty Drive</strong> · Sector NW2 · NW1</dd></div>
+        <div class="wc-f" data-f="asset"><dt>Asset</dt><dd><strong>Bollard</strong> · Bollard</dd></div>
+        <div class="wc-f" data-f="def"><dt>Defect type</dt><dd class="m-def" data-def="Hole">Hole</dd></div>
+        <div class="wc-f" data-f="wt"><dt>Work type</dt><dd>Simplified item</dd></div>
+        <div class="wc-f" data-f="est"><dt>Est. completion</dt><dd><b>29 Jun 2026</b></dd></div>
+        <div class="wc-f" data-f="asg"><dt>Assign to</dt><dd class="cf-asg"></dd></div>
+        <div class="wc-f" data-f="upd"><dt>Last updated</dt><dd><b>15 Jul 2026</b></dd></div>
+      </dl>
+    </a></li>
+    <li><a class="wi-card" href="mwi-workflow.html" data-dept="RRFM" data-inst="2 Jun 2026">
+      <div class="wc-head"><span class="num">RMWP-TR388-RRFM-M-13</span><span class="chip chip-sm chip-draft">Draft</span></div>
+      <dl class="wc-grid">
+        <div class="wc-f" data-f="road"><dt>Road</dt><dd><strong>Admiralty Lane</strong> · Sector NW2 · NW1</dd></div>
+        <div class="wc-f" data-f="asset"><dt>Asset</dt><dd><strong>Traffic sign</strong> · Signage</dd></div>
+        <div class="wc-f" data-f="def"><dt>Defect type</dt><dd class="m-def" data-def="No stopping sign">No stopping sign</dd></div>
+        <div class="wc-f" data-f="wt"><dt>Work type</dt><dd>Works order — accident</dd></div>
+        <div class="wc-f" data-f="est"><dt>Est. completion</dt><dd><b>30 Jun 2026</b></dd></div>
+        <div class="wc-f" data-f="asg"><dt>Assign to</dt><dd class="cf-asg"></dd></div>
+        <div class="wc-f" data-f="upd"><dt>Last updated</dt><dd><b>16 Jul 2026</b></dd></div>
+      </dl>
+    </a></li>
+    <li><a class="wi-card" href="mwi-workflow.html" data-dept="RRFM" data-inst="2 Jun 2026">
+      <div class="wc-head"><span class="num">RMWP-TR388-RRFM-M-12</span><span class="chip chip-sm chip-draft">Draft</span></div>
+      <dl class="wc-grid">
+        <div class="wc-f" data-f="road"><dt>Road</dt><dd><strong>Admiralty Lane</strong> · Sector NW2 · NW1</dd></div>
+        <div class="wc-f" data-f="asset"><dt>Asset</dt><dd><strong>Railing</strong> · Railing</dd></div>
+        <div class="wc-f" data-f="def"><dt>Defect type</dt><dd class="m-def" data-def="Damaged">Damaged</dd></div>
+        <div class="wc-f" data-f="wt"><dt>Work type</dt><dd>Works order — accident</dd></div>
+        <div class="wc-f" data-f="est"><dt>Est. completion</dt><dd><b>30 Jun 2026</b></dd></div>
+        <div class="wc-f" data-f="asg"><dt>Assign to</dt><dd class="cf-asg"></dd></div>
+        <div class="wc-f" data-f="upd"><dt>Last updated</dt><dd><b>16 Jul 2026</b></dd></div>
+      </dl>
+    </a></li>
+    <li><a class="wi-card" href="mwi-workflow.html" data-dept="RRFM" data-inst="2 Jul 2026">
+      <div class="wc-head"><span class="num">RMWP-TR388-RRFM-M-24</span><span class="chip chip-sm">Work in progress</span></div>
+      <dl class="wc-grid">
+        <div class="wc-f" data-f="road"><dt>Road</dt><dd><strong>Admiralty Drive</strong> · Sector NW2 · NW1</dd></div>
+        <div class="wc-f" data-f="asset"><dt>Asset</dt><dd>Not selected yet</dd></div>
+        <div class="wc-f" data-f="def"><dt>Defect type</dt><dd class="m-def" data-def="">Not set</dd></div>
+        <div class="wc-f" data-f="wt"><dt>Work type</dt><dd>Simplified item</dd></div>
+        <div class="wc-f" data-f="est"><dt>Est. completion</dt><dd><b>8 Jul 2026</b></dd></div>
+        <div class="wc-f" data-f="asg"><dt>Assign to</dt><dd class="cf-asg"></dd></div>
+        <div class="wc-f" data-f="upd"><dt>Last updated</dt><dd><b>2 Jul 2026</b></dd></div>
+      </dl>
+    </a></li>
+    <li><a class="wi-card" href="mwi-workflow.html" data-dept="RRFM" data-inst="10 Jul 2026">
+      <div class="wc-head"><span class="num">RMWP-TR388-RRFM-M-27</span><span class="chip chip-sm">Work in progress</span></div>
+      <dl class="wc-grid">
+        <div class="wc-f" data-f="road"><dt>Road</dt><dd><strong>Admiralty Drive</strong> · Sector NW2 · NW1</dd></div>
+        <div class="wc-f" data-f="asset"><dt>Asset</dt><dd><strong>Carriageway</strong> · Flexible pavement</dd></div>
+        <div class="wc-f" data-f="def"><dt>Defect type</dt><dd class="m-def" data-def="Depression">Depression</dd></div>
+        <div class="wc-f" data-f="wt"><dt>Work type</dt><dd>Simplified item</dd></div>
+        <div class="wc-f" data-f="est"><dt>Est. completion</dt><dd><b>30 Jul 2026</b></dd></div>
+        <div class="wc-f" data-f="asg"><dt>Assign to</dt><dd class="cf-asg"></dd></div>
+        <div class="wc-f" data-f="upd"><dt>Last updated</dt><dd><b>10 Jul 2026</b></dd></div>
+      </dl>
+    </a></li>
+    <li><a class="wi-card" href="mwi-workflow.html" data-dept="RRFM" data-inst="2 Jun 2026">
+      <div class="wc-head"><span class="num">RMWP-TR388-RRFM-M-8</span><span class="chip chip-sm">Verification in progress</span></div>
+      <dl class="wc-grid">
+        <div class="wc-f" data-f="road"><dt>Road</dt><dd><strong>Adis Road</strong> · Sector NW3 · CS4</dd></div>
+        <div class="wc-f" data-f="asset"><dt>Asset</dt><dd><strong>Bollard</strong> · Bollard</dd></div>
+        <div class="wc-f" data-f="def"><dt>Defect type</dt><dd class="m-def" data-def="Hole">Hole</dd></div>
+        <div class="wc-f" data-f="wt"><dt>Work type</dt><dd>Works order — accident</dd></div>
+        <div class="wc-f" data-f="est"><dt>Est. completion</dt><dd><b>2 Jun 2026</b></dd></div>
+        <div class="wc-f" data-f="asg"><dt>Assign to</dt><dd class="cf-asg"></dd></div>
+        <div class="wc-f" data-f="upd"><dt>Last updated</dt><dd><b>15 Jul 2026</b></dd></div>
+      </dl>
+    </a></li>
+    <li><a class="wi-card" href="mwi-workflow.html" data-dept="RRFM" data-inst="5 Jun 2026">
+      <div class="wc-head"><span class="num">RMWP-TR388-RRFM-M-14</span><span class="chip chip-sm">Approval in progress</span></div>
+      <dl class="wc-grid">
+        <div class="wc-f" data-f="road"><dt>Road</dt><dd><strong>Adis Road</strong> · Sector NW3 · CS4</dd></div>
+        <div class="wc-f" data-f="asset"><dt>Asset</dt><dd><strong>Bollard</strong> · Bollard</dd></div>
+        <div class="wc-f" data-f="def"><dt>Defect type</dt><dd class="m-def" data-def="Hole">Hole</dd></div>
+        <div class="wc-f" data-f="wt"><dt>Work type</dt><dd>Outcome-based defect</dd></div>
+        <div class="wc-f" data-f="est"><dt>Est. completion</dt><dd><b>7 Jun 2026</b></dd></div>
+        <div class="wc-f" data-f="asg"><dt>Assign to</dt><dd class="cf-asg"></dd></div>
+        <div class="wc-f" data-f="upd"><dt>Last updated</dt><dd><b>15 Jul 2026</b></dd></div>
+      </dl>
+    </a></li>
+    <li><a class="wi-card" href="mwi-workflow.html" data-dept="PATH" data-inst="3 Jun 2026">
+      <div class="wc-head"><span class="num">RMWP-TR388-PATH-M-4</span><span class="chip chip-sm">Approved & closed</span></div>
+      <dl class="wc-grid">
+        <div class="wc-f" data-f="road"><dt>Road</dt><dd><strong>Palm Drive</strong> · Sector NW2 · NW2</dd></div>
+        <div class="wc-f" data-f="asset"><dt>Asset</dt><dd><strong>Footpath</strong> · Pavement surface</dd></div>
+        <div class="wc-f" data-f="def"><dt>Defect type</dt><dd class="m-def" data-def="Cracked surface">Cracked surface</dd></div>
+        <div class="wc-f" data-f="wt"><dt>Work type</dt><dd>Works order — accident</dd></div>
+        <div class="wc-f" data-f="est"><dt>Est. completion</dt><dd><b>15 Jun 2026</b></dd></div>
+        <div class="wc-f" data-f="asg"><dt>Assign to</dt><dd class="cf-asg"></dd></div>
+        <div class="wc-f" data-f="upd"><dt>Last updated</dt><dd><b>3 Jun 2026</b></dd></div>
+      </dl>
+    </a></li>
+    <li><a class="wi-card" href="mwi-workflow.html" data-dept="PATH" data-inst="3 Jun 2026">
+      <div class="wc-head"><span class="num">RMWP-TR388-PATH-M-1</span><span class="chip chip-sm">Verification in progress</span></div>
+      <dl class="wc-grid">
+        <div class="wc-f" data-f="road"><dt>Road</dt><dd><strong>Palm Drive</strong> · Sector NW2 · NW2</dd></div>
+        <div class="wc-f" data-f="asset"><dt>Asset</dt><dd><strong>Footpath</strong> · Pavement surface</dd></div>
+        <div class="wc-f" data-f="def"><dt>Defect type</dt><dd class="m-def" data-def="Cracked surface">Cracked surface</dd></div>
+        <div class="wc-f" data-f="wt"><dt>Work type</dt><dd>Simplified item</dd></div>
+        <div class="wc-f" data-f="est"><dt>Est. completion</dt><dd><b>16 Jun 2026</b></dd></div>
+        <div class="wc-f" data-f="asg"><dt>Assign to</dt><dd class="cf-asg"></dd></div>
+        <div class="wc-f" data-f="upd"><dt>Last updated</dt><dd><b>3 Jun 2026</b></dd></div>
+      </dl>
+    </a></li>
+    <li><a class="wi-card" href="mwi-workflow.html" data-dept="RRFM" data-inst="20 Jul 2026">
+      <div class="wc-head"><span class="num">RMWP-TR388-RRFM-M-31</span><span class="chip chip-sm chip-draft">Draft</span></div>
+      <dl class="wc-grid">
+        <div class="wc-f" data-f="road"><dt>Road</dt><dd><strong>Alexandra Road</strong> · Sector SW1 · SW1</dd></div>
+        <div class="wc-f" data-f="asset"><dt>Asset</dt><dd><strong>Kerb</strong> · Kerb line</dd></div>
+        <div class="wc-f" data-f="def"><dt>Defect type</dt><dd class="m-def" data-def="Damaged">Damaged</dd></div>
+        <div class="wc-f" data-f="wt"><dt>Work type</dt><dd>Simplified item</dd></div>
+        <div class="wc-f" data-f="est"><dt>Est. completion</dt><dd><b>12 Aug 2026</b></dd></div>
+        <div class="wc-f" data-f="asg"><dt>Assign to</dt><dd class="cf-asg"></dd></div>
+        <div class="wc-f" data-f="upd"><dt>Last updated</dt><dd><b>20 Jul 2026</b></dd></div>
+      </dl>
+    </a></li>
+    <li><a class="wi-card" href="mwi-workflow.html" data-dept="CFM" data-inst="18 Jul 2026">
+      <div class="wc-head"><span class="num">RMWP-TR388-CFM-M-2</span><span class="chip chip-sm chip-draft">Draft</span></div>
+      <dl class="wc-grid">
+        <div class="wc-f" data-f="road"><dt>Road</dt><dd><strong>Balestier Road</strong> · Sector NE1 · NE1</dd></div>
+        <div class="wc-f" data-f="asset"><dt>Asset</dt><dd><strong>Road marking</strong> · Line marking</dd></div>
+        <div class="wc-f" data-f="def"><dt>Defect type</dt><dd class="m-def" data-def="Faded">Faded</dd></div>
+        <div class="wc-f" data-f="wt"><dt>Work type</dt><dd>Works order — accident</dd></div>
+        <div class="wc-f" data-f="est"><dt>Est. completion</dt><dd><b>5 Aug 2026</b></dd></div>
+        <div class="wc-f" data-f="asg"><dt>Assign to</dt><dd class="cf-asg"></dd></div>
+        <div class="wc-f" data-f="upd"><dt>Last updated</dt><dd><b>22 Jul 2026</b></dd></div>
+      </dl>
+    </a></li>
+    <li><a class="wi-card" href="mwi-workflow.html" data-dept="BDG" data-inst="12 Jul 2026">
+      <div class="wc-head"><span class="num">RMWP-TR388-BDG-M-9</span><span class="chip chip-sm">Work in progress</span></div>
+      <dl class="wc-grid">
+        <div class="wc-f" data-f="road"><dt>Road</dt><dd><strong>Bukit Timah Road</strong> · Sector NW1 · NW1</dd></div>
+        <div class="wc-f" data-f="asset"><dt>Asset</dt><dd><strong>Railing</strong> · Railing</dd></div>
+        <div class="wc-f" data-f="def"><dt>Defect type</dt><dd class="m-def" data-def="Damaged">Damaged</dd></div>
+        <div class="wc-f" data-f="wt"><dt>Work type</dt><dd>Outcome-based defect</dd></div>
+        <div class="wc-f" data-f="est"><dt>Est. completion</dt><dd><b>28 Jul 2026</b></dd></div>
+        <div class="wc-f" data-f="asg"><dt>Assign to</dt><dd class="cf-asg"></dd></div>
+        <div class="wc-f" data-f="upd"><dt>Last updated</dt><dd><b>23 Jul 2026</b></dd></div>
+      </dl>
+    </a></li>
+    <li><a class="wi-card" href="mwi-workflow.html" data-dept="RRFM" data-inst="15 Jul 2026">
+      <div class="wc-head"><span class="num">RMWP-TR388-RRFM-M-33</span><span class="chip chip-sm">Work in progress</span></div>
+      <dl class="wc-grid">
+        <div class="wc-f" data-f="road"><dt>Road</dt><dd><strong>Changi Road</strong> · Sector SE2 · SE2</dd></div>
+        <div class="wc-f" data-f="asset"><dt>Asset</dt><dd><strong>Carriageway</strong> · Flexible pavement</dd></div>
+        <div class="wc-f" data-f="def"><dt>Defect type</dt><dd class="m-def" data-def="Depression">Depression</dd></div>
+        <div class="wc-f" data-f="wt"><dt>Work type</dt><dd>Simplified item</dd></div>
+        <div class="wc-f" data-f="est"><dt>Est. completion</dt><dd><b>3 Aug 2026</b></dd></div>
+        <div class="wc-f" data-f="asg"><dt>Assign to</dt><dd class="cf-asg"></dd></div>
+        <div class="wc-f" data-f="upd"><dt>Last updated</dt><dd><b>21 Jul 2026</b></dd></div>
+      </dl>
+    </a></li>
+    <li><a class="wi-card" href="mwi-workflow.html" data-dept="PATH" data-inst="14 Jul 2026">
+      <div class="wc-head"><span class="num">RMWP-TR388-PATH-M-11</span><span class="chip chip-sm">Work in progress</span></div>
+      <dl class="wc-grid">
+        <div class="wc-f" data-f="road"><dt>Road</dt><dd><strong>Clementi Road</strong> · Sector SW2 · SW2</dd></div>
+        <div class="wc-f" data-f="asset"><dt>Asset</dt><dd><strong>Footpath</strong> · Pavement surface</dd></div>
+        <div class="wc-f" data-f="def"><dt>Defect type</dt><dd class="m-def" data-def="Uneven surface">Uneven surface</dd></div>
+        <div class="wc-f" data-f="wt"><dt>Work type</dt><dd>Works order — accident</dd></div>
+        <div class="wc-f" data-f="est"><dt>Est. completion</dt><dd><b>30 Jul 2026</b></dd></div>
+        <div class="wc-f" data-f="asg"><dt>Assign to</dt><dd class="cf-asg"></dd></div>
+        <div class="wc-f" data-f="upd"><dt>Last updated</dt><dd><b>24 Jul 2026</b></dd></div>
+      </dl>
+    </a></li>
+    <li><a class="wi-card" href="mwi-workflow.html" data-dept="RRFM" data-inst="1 Jul 2026">
+      <div class="wc-head"><span class="num">RMWP-TR388-RRFM-M-35</span><span class="chip chip-sm">Verification in progress</span></div>
+      <dl class="wc-grid">
+        <div class="wc-f" data-f="road"><dt>Road</dt><dd><strong>Dunearn Road</strong> · Sector NW1 · NW2</dd></div>
+        <div class="wc-f" data-f="asset"><dt>Asset</dt><dd><strong>Drain</strong> · Drain grating</dd></div>
+        <div class="wc-f" data-f="def"><dt>Defect type</dt><dd class="m-def" data-def="Choked">Choked</dd></div>
+        <div class="wc-f" data-f="wt"><dt>Work type</dt><dd>Simplified item</dd></div>
+        <div class="wc-f" data-f="est"><dt>Est. completion</dt><dd><b>22 Jul 2026</b></dd></div>
+        <div class="wc-f" data-f="asg"><dt>Assign to</dt><dd class="cf-asg"></dd></div>
+        <div class="wc-f" data-f="upd"><dt>Last updated</dt><dd><b>19 Jul 2026</b></dd></div>
+      </dl>
+    </a></li>
+    <li><a class="wi-card" href="mwi-workflow.html" data-dept="CFM" data-inst="5 Jul 2026">
+      <div class="wc-head"><span class="num">RMWP-TR388-CFM-M-5</span><span class="chip chip-sm">Verification in progress</span></div>
+      <dl class="wc-grid">
+        <div class="wc-f" data-f="road"><dt>Road</dt><dd><strong>Eu Tong Sen Street</strong> · Sector SE · SE1</dd></div>
+        <div class="wc-f" data-f="asset"><dt>Asset</dt><dd><strong>Traffic sign</strong> · Signage</dd></div>
+        <div class="wc-f" data-f="def"><dt>Defect type</dt><dd class="m-def" data-def="Missing">Missing</dd></div>
+        <div class="wc-f" data-f="wt"><dt>Work type</dt><dd>Works order — accident</dd></div>
+        <div class="wc-f" data-f="est"><dt>Est. completion</dt><dd><b>25 Jul 2026</b></dd></div>
+        <div class="wc-f" data-f="asg"><dt>Assign to</dt><dd class="cf-asg"></dd></div>
+        <div class="wc-f" data-f="upd"><dt>Last updated</dt><dd><b>18 Jul 2026</b></dd></div>
+      </dl>
+    </a></li>
+    <li><a class="wi-card" href="mwi-workflow.html" data-dept="RRFM" data-inst="28 Jun 2026">
+      <div class="wc-head"><span class="num">RMWP-TR388-RRFM-M-38</span><span class="chip chip-sm">Approval in progress</span></div>
+      <dl class="wc-grid">
+        <div class="wc-f" data-f="road"><dt>Road</dt><dd><strong>Farrer Road</strong> · Sector SW · SW2</dd></div>
+        <div class="wc-f" data-f="asset"><dt>Asset</dt><dd><strong>Bollard</strong> · Bollard</dd></div>
+        <div class="wc-f" data-f="def"><dt>Defect type</dt><dd class="m-def" data-def="Damaged">Damaged</dd></div>
+        <div class="wc-f" data-f="wt"><dt>Work type</dt><dd>Simplified item</dd></div>
+        <div class="wc-f" data-f="est"><dt>Est. completion</dt><dd><b>18 Jul 2026</b></dd></div>
+        <div class="wc-f" data-f="asg"><dt>Assign to</dt><dd class="cf-asg"></dd></div>
+        <div class="wc-f" data-f="upd"><dt>Last updated</dt><dd><b>17 Jul 2026</b></dd></div>
+      </dl>
+    </a></li>
+    <li><a class="wi-card" href="mwi-workflow.html" data-dept="BDG" data-inst="30 Jun 2026">
+      <div class="wc-head"><span class="num">RMWP-TR388-BDG-M-12</span><span class="chip chip-sm">Approval in progress</span></div>
+      <dl class="wc-grid">
+        <div class="wc-f" data-f="road"><dt>Road</dt><dd><strong>Havelock Road</strong> · Sector SE1 · SE1</dd></div>
+        <div class="wc-f" data-f="asset"><dt>Asset</dt><dd><strong>Railing</strong> · Railing</dd></div>
+        <div class="wc-f" data-f="def"><dt>Defect type</dt><dd class="m-def" data-def="Cracked surface">Cracked surface</dd></div>
+        <div class="wc-f" data-f="wt"><dt>Work type</dt><dd>Outcome-based defect</dd></div>
+        <div class="wc-f" data-f="est"><dt>Est. completion</dt><dd><b>20 Jul 2026</b></dd></div>
+        <div class="wc-f" data-f="asg"><dt>Assign to</dt><dd class="cf-asg"></dd></div>
+        <div class="wc-f" data-f="upd"><dt>Last updated</dt><dd><b>16 Jul 2026</b></dd></div>
+      </dl>
+    </a></li>
+    <li><a class="wi-card" href="mwi-workflow.html" data-dept="RRFM" data-inst="20 Jun 2026">
+      <div class="wc-head"><span class="num">RMWP-TR388-RRFM-M-40</span><span class="chip chip-sm">Approved & closed</span></div>
+      <dl class="wc-grid">
+        <div class="wc-f" data-f="road"><dt>Road</dt><dd><strong>Keppel Road</strong> · Sector SE2 · SE2</dd></div>
+        <div class="wc-f" data-f="asset"><dt>Asset</dt><dd><strong>Carriageway</strong> · Flexible pavement</dd></div>
+        <div class="wc-f" data-f="def"><dt>Defect type</dt><dd class="m-def" data-def="Hole">Hole</dd></div>
+        <div class="wc-f" data-f="wt"><dt>Work type</dt><dd>Works order — accident</dd></div>
+        <div class="wc-f" data-f="est"><dt>Est. completion</dt><dd><b>10 Jul 2026</b></dd></div>
+        <div class="wc-f" data-f="asg"><dt>Assign to</dt><dd class="cf-asg"></dd></div>
+        <div class="wc-f" data-f="upd"><dt>Last updated</dt><dd><b>12 Jul 2026</b></dd></div>
+      </dl>
+    </a></li>
+    <li><a class="wi-card" href="mwi-workflow.html" data-dept="PATH" data-inst="22 Jul 2026">
+      <div class="wc-head"><span class="num">RMWP-TR388-PATH-M-14</span><span class="chip chip-sm chip-draft">Draft</span></div>
+      <dl class="wc-grid">
+        <div class="wc-f" data-f="road"><dt>Road</dt><dd><strong>Lornie Road</strong> · Sector NA1 · NA1</dd></div>
+        <div class="wc-f" data-f="asset"><dt>Asset</dt><dd><strong>Footpath</strong> · Pavement surface</dd></div>
+        <div class="wc-f" data-f="def"><dt>Defect type</dt><dd class="m-def" data-def="Cracked surface">Cracked surface</dd></div>
+        <div class="wc-f" data-f="wt"><dt>Work type</dt><dd>Simplified item</dd></div>
+        <div class="wc-f" data-f="est"><dt>Est. completion</dt><dd><b>15 Aug 2026</b></dd></div>
+        <div class="wc-f" data-f="asg"><dt>Assign to</dt><dd class="cf-asg"></dd></div>
+        <div class="wc-f" data-f="upd"><dt>Last updated</dt><dd><b>22 Jul 2026</b></dd></div>
+      </dl>
+    </a></li>
+    <li><a class="wi-card" href="mwi-workflow.html" data-dept="RRFM" data-inst="16 Jul 2026">
+      <div class="wc-head"><span class="num">RMWP-TR388-RRFM-M-42</span><span class="chip chip-sm">Work in progress</span></div>
+      <dl class="wc-grid">
+        <div class="wc-f" data-f="road"><dt>Road</dt><dd><strong>Marina Boulevard</strong> · Sector EXP · EXP</dd></div>
+        <div class="wc-f" data-f="asset"><dt>Asset</dt><dd><strong>Streetlight</strong> · Lamp post</dd></div>
+        <div class="wc-f" data-f="def"><dt>Defect type</dt><dd class="m-def" data-def="Damaged">Damaged</dd></div>
+        <div class="wc-f" data-f="wt"><dt>Work type</dt><dd>Works order — accident</dd></div>
+        <div class="wc-f" data-f="est"><dt>Est. completion</dt><dd><b>8 Aug 2026</b></dd></div>
+        <div class="wc-f" data-f="asg"><dt>Assign to</dt><dd class="cf-asg"></dd></div>
+        <div class="wc-f" data-f="upd"><dt>Last updated</dt><dd><b>25 Jul 2026</b></dd></div>
+      </dl>
+    </a></li>
+    <li><a class="wi-card" href="mwi-workflow.html" data-dept="CFM" data-inst="8 Jul 2026">
+      <div class="wc-head"><span class="num">RMWP-TR388-CFM-M-8</span><span class="chip chip-sm">Verification in progress</span></div>
+      <dl class="wc-grid">
+        <div class="wc-f" data-f="road"><dt>Road</dt><dd><strong>Newton Road</strong> · Sector NE2 · NE2</dd></div>
+        <div class="wc-f" data-f="asset"><dt>Asset</dt><dd><strong>Road marking</strong> · Line marking</dd></div>
+        <div class="wc-f" data-f="def"><dt>Defect type</dt><dd class="m-def" data-def="Faded">Faded</dd></div>
+        <div class="wc-f" data-f="wt"><dt>Work type</dt><dd>Simplified item</dd></div>
+        <div class="wc-f" data-f="est"><dt>Est. completion</dt><dd><b>26 Jul 2026</b></dd></div>
+        <div class="wc-f" data-f="asg"><dt>Assign to</dt><dd class="cf-asg"></dd></div>
+        <div class="wc-f" data-f="upd"><dt>Last updated</dt><dd><b>20 Jul 2026</b></dd></div>
+      </dl>
+    </a></li>
+    <li><a class="wi-card" href="mwi-workflow.html" data-dept="RRFM" data-inst="12 Jun 2026">
+      <div class="wc-head"><span class="num">RMWP-TR388-RRFM-M-45</span><span class="chip chip-sm">Approved & closed</span></div>
+      <dl class="wc-grid">
+        <div class="wc-f" data-f="road"><dt>Road</dt><dd><strong>Orchard Road</strong> · Sector NE4 · NE4</dd></div>
+        <div class="wc-f" data-f="asset"><dt>Asset</dt><dd><strong>Kerb</strong> · Kerb line</dd></div>
+        <div class="wc-f" data-f="def"><dt>Defect type</dt><dd class="m-def" data-def="Damaged">Damaged</dd></div>
+        <div class="wc-f" data-f="wt"><dt>Work type</dt><dd>Outcome-based defect</dd></div>
+        <div class="wc-f" data-f="est"><dt>Est. completion</dt><dd><b>5 Jul 2026</b></dd></div>
+        <div class="wc-f" data-f="asg"><dt>Assign to</dt><dd class="cf-asg"></dd></div>
+        <div class="wc-f" data-f="upd"><dt>Last updated</dt><dd><b>8 Jul 2026</b></dd></div>
+      </dl>
+    </a></li>
+  </ul>
+
+  <div class="pager">
+    <span class="info">1–10 of 41</span>
+    <div class="pages">
+      <button class="page-btn" disabled aria-label="Previous page">‹</button>
+      <button class="page-btn current">1</button>
+      <button class="page-btn">2</button>
+      <button class="page-btn">3</button>
+      <button class="page-btn">4</button>
+      <button class="page-btn">5</button>
+      <button class="page-btn" aria-label="Next page">›</button>
+    </div>
+  </div>
+
+  </div>
+</main>
+<script>
+(function(){
+  var btn=document.getElementById('menu-btn'),
+      sb=document.querySelector('.sidebar'),
+      bd=document.getElementById('backdrop');
+  if(!btn||!sb||!bd)return;
+  function set(open){
+    sb.classList.toggle('open',open);
+    bd.classList.toggle('show',open);
+    btn.setAttribute('aria-expanded',open);
+  }
+  btn.addEventListener('click',function(){set(!sb.classList.contains('open'));});
+  document.querySelectorAll('.row-link').forEach(function(r){
+    function go(){
+      var target=(r.dataset.fstatus==='draft') ? 'mwi-draft.html' : r.getAttribute('data-href');
+      var src=location.search.replace(/^\?/,'');
+      if(/^https?:\/\//.test(src)){   // served through htmlpreview — rebuild against the source URL
+        window.location.href=location.origin+'/?'+src.replace(/[^\/]*$/,target); return; }
+      var rr=document.body.dataset.role;
+      window.location.href=target+(rr?'?role='+rr:'');
+    }
+    r.addEventListener('click',go);
+    r.addEventListener('keydown',function(e){if(e.key==='Enter')go();});
+  });
+  bd.addEventListener('click',function(){set(false);});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')set(false);});
+})();
+</script>
+<script>
+(function(){
+  function build(sel){
+    if(sel.dataset.x)return; sel.dataset.x='1';
+    var wrap=document.createElement('div'); wrap.className='xselect';
+    sel.parentNode.insertBefore(wrap,sel); wrap.appendChild(sel); sel.style.display='none';
+    var trg=document.createElement('button'); trg.type='button'; trg.className='xselect-trigger';
+    trg.setAttribute('aria-haspopup','listbox'); trg.setAttribute('aria-expanded','false');
+    var lab=document.createElement('span'); lab.className='xselect-label';
+    var chev=document.createElement('span'); chev.className='xselect-chev';
+    chev.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>';
+    trg.appendChild(lab); trg.appendChild(chev);
+    var menu=document.createElement('div'); menu.className='xselect-menu'; menu.setAttribute('role','listbox');
+    var opts=Array.prototype.slice.call(sel.options);
+    var init=sel.querySelector('option[selected]')||opts[sel.selectedIndex]||opts[0];
+    function setLabel(opt){ lab.textContent=opt?opt.textContent.replace(/ /g,'  '):''; lab.classList.toggle('is-placeholder',!!(opt&&opt.disabled)); }
+    opts.forEach(function(opt){
+      if(opt.disabled)return;
+      var o=document.createElement('div'); o.className='xselect-option'; o.setAttribute('role','option');
+      o.textContent=opt.textContent;
+      if(opt.disabled)o.classList.add('is-disabled');
+      if(opt===init&&!opt.disabled)o.classList.add('is-selected');
+      o.addEventListener('click',function(e){
+        e.stopPropagation(); if(opt.disabled)return;
+        sel.selectedIndex=opts.indexOf(opt); setLabel(opt);
+        menu.querySelectorAll('.xselect-option').forEach(function(x){x.classList.remove('is-selected')});
+        o.classList.add('is-selected');
+        wrap.classList.remove('open'); trg.setAttribute('aria-expanded','false');
+        sel.dispatchEvent(new Event('change',{bubbles:true}));
+      });
+      menu.appendChild(o);
+    });
+    setLabel(init);
+    function place(){
+      var r=trg.getBoundingClientRect();
+      menu.style.left=r.left+'px'; menu.style.width=r.width+'px';
+      var below=window.innerHeight-r.bottom-8;
+      if(below<200 && r.top>below){
+        menu.style.top='auto'; menu.style.bottom=(window.innerHeight-r.top+6)+'px';
+        menu.style.maxHeight=Math.min(288,r.top-16)+'px';
+      } else {
+        menu.style.bottom='auto'; menu.style.top=(r.bottom+6)+'px';
+        menu.style.maxHeight=Math.min(288,below-8)+'px';
+      }
+    }
+    trg.addEventListener('click',function(e){
+      e.stopPropagation(); var willOpen=!wrap.classList.contains('open');
+      closeAll(); if(willOpen)place(); wrap.classList.toggle('open',willOpen); trg.setAttribute('aria-expanded',willOpen?'true':'false');
+    });
+    window.addEventListener('scroll',function(){ if(wrap.classList.contains('open'))closeAll(); },true);
+    window.addEventListener('resize',function(){ if(wrap.classList.contains('open'))closeAll(); });
+    wrap.appendChild(trg); wrap.appendChild(menu);
+  }
+  function closeAll(){ document.querySelectorAll('.xselect.open').forEach(function(w){ w.classList.remove('open'); var t=w.querySelector('.xselect-trigger'); if(t)t.setAttribute('aria-expanded','false'); }); }
+  document.addEventListener('click',closeAll);
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape')closeAll(); });
+  document.querySelectorAll('select.control, .sort-row select, .jump-select select').forEach(build);
+})();
+</script>
+<script>
+(function(){
+  var META={co:{ini:'DC',name:'DEV CO01',role:'Contract Officer'},ss:{ini:'DT',name:'DEV TR388SS01',role:'Site Supervisor'},eng:{ini:'DT',name:'DEV TR388ENG01',role:'Engineer'}};
+  var SHOW={Reports:['co','eng'],Contract:['co','eng'],Configuration:['co']};
+  function getRole(){var m=/[?&]role=(co|ss|eng)/.exec(location.search);return m?m[1]:'co';}
+  function apply(r){
+    var M=META[r]||META.co;
+    var i=document.getElementById('rs-ini'),n=document.getElementById('rs-name'),o=document.getElementById('rs-role');
+    document.body.dataset.role=r;      // single source of truth for the other scripts
+    if(i){i.textContent=M.ini;i.className='rs-av rs-'+r;} if(n)n.textContent=M.name; if(o)o.textContent=M.role;
+    document.querySelectorAll('.rolesw-opt').forEach(function(b){b.classList.toggle('on',b.dataset.role===r);});
+    document.querySelectorAll('.sidebar .nav-item').forEach(function(a){var t=(a.textContent||'').trim();if(SHOW[t])a.style.display=SHOW[t].indexOf(r)>=0?'':'none';});
+    document.querySelectorAll('a[href]').forEach(function(a){var h=a.getAttribute('href');if(/^mwi-[a-z0-9-]+\.html/i.test(h)){a.setAttribute('href',h.split('?')[0].split('#')[0]+'?role='+r);}});
+  }
+  function setRole(r){apply(r);try{history.replaceState(null,'',location.pathname+'?role='+r);}catch(e){}}
+  var rs=document.getElementById('rolesw');
+  if(rs){
+    document.getElementById('rolesw-trg').addEventListener('click',function(e){e.stopPropagation();var op=rs.classList.toggle('open');this.setAttribute('aria-expanded',op);});
+    document.addEventListener('click',function(){rs.classList.remove('open');});
+    document.querySelectorAll('.rolesw-opt').forEach(function(b){b.addEventListener('click',function(){setRole(b.dataset.role);rs.classList.remove('open');});});
+    apply(getRole());
+  }
+})();
+</script><div class="toast" id="toast"></div>
+<script>
+(function(){
+  // Per-WI stage + assignee. Bucket (To do / In progress / Submitted) is derived
+  // PER ROLE from the stage — see bucketFor().
+  var META={'RMWP-TR388-RRFM-M-17':{st:'draft',a:false},'RMWP-TR388-RRFM-M-7':{st:'draft',a:false},'RMWP-TR388-RRFM-M-13':{st:'draft',a:true,who:'DEV CO01'},'RMWP-TR388-RRFM-M-12':{st:'draft',a:false},'RMWP-TR388-RRFM-M-24':{st:'wip',a:false},'RMWP-TR388-RRFM-M-27':{st:'wip',a:true,who:'DEV TR388SS01'},'RMWP-TR388-RRFM-M-8':{st:'ver',a:true,who:'DEV TR388ENG01'},'RMWP-TR388-RRFM-M-14':{st:'appr',a:true,who:'DEV CO01'},'RMWP-TR388-PATH-M-4':{st:'closed',a:false,who:'DEV PATHTR388SS01'},'RMWP-TR388-PATH-M-1':{st:'ver',a:false},'RMWP-TR388-RRFM-M-31':{st:'draft',a:false},'RMWP-TR388-CFM-M-2':{st:'draft',a:true,who:'DEV CO01'},'RMWP-TR388-BDG-M-9':{st:'wip',a:true,who:'DEV TR388SS01'},'RMWP-TR388-RRFM-M-33':{st:'wip',a:false},'RMWP-TR388-PATH-M-11':{st:'wip',a:true,who:'DEV PATHTR388SS01'},'RMWP-TR388-RRFM-M-35':{st:'ver',a:true,who:'DEV TR388ENG01'},'RMWP-TR388-CFM-M-5':{st:'ver',a:false},'RMWP-TR388-RRFM-M-38':{st:'appr',a:true,who:'DEV CO01'},'RMWP-TR388-BDG-M-12':{st:'appr',a:false},'RMWP-TR388-RRFM-M-40':{st:'closed',a:false,who:'DEV TR388ENG01'},'RMWP-TR388-PATH-M-14':{st:'draft',a:false},'RMWP-TR388-RRFM-M-42':{st:'wip',a:false},'RMWP-TR388-CFM-M-8':{st:'ver',a:true,who:'DEV TR388ENG01'},'RMWP-TR388-RRFM-M-45':{st:'closed',a:false,who:'DEV CO01'}};
+  // Who each role is, for "Assign to self".
+  var ME={co:'DEV CO01',ss:'DEV TR388SS01',eng:'DEV TR388ENG01'};
+  var LABEL={draft:'Draft',wip:'Work in progress',ver:'Verification in progress',appr:'Approval in progress',closed:'Approved & closed'};
+  var SORD=['draft','wip','ver','appr','closed'];
+  // mobile-only short forms — LTA's own timeline writes these as Work-in-Progress /
+  // Verification-in-Progress / Approval-in-Progress, and mwi-wi-workflow.html already
+  // ships "AIP", so the initialisms are the house style rather than something new
+  var ABBR={draft:'Draft',wip:'WIP',ver:'VIP',appr:'AIP',closed:'Closed'};
+
+  // ---- Filter vocabularies -------------------------------------------------
+  // The live Advanced Filter offers the full value set for the contract, NOT just
+  // the values present on screen — so these lists are deliberately larger than the
+  // 24 demo rows use. That is what makes the per-facet search worth having.
+  // ⚠️ Placeholder values pending Arjun's real domains — see SPEC_field-matrix.md §1e.
+  var VOCAB={
+    fsector:['EXP','NA1','NE','NE1','NE2','NE4','NW1','NW2','NW3','SE','SE1','SE2','SW','SW1','SW2'],
+    fsub:['CS1','CS2','CS3','CS4','EXP','NA1','NE1','NE2','NE4','NW1','NW2','NW3','SE1','SE2','SW1','SW2'],
+    fdept:['BDG','CFM','PATH','RRFM'],
+    fworktype:['Outcome-based defect','Simplified item','Works order — accident'],
+    fasset:['Bollard','Carriageway','Drain','Footpath','Kerb','Railing','Road marking','Streetlight','Traffic sign'],
+    felement:['Bollard','Drain grating','Flexible pavement','Kerb line','Lamp post','Line marking','Pavement surface','Railing','Rigid pavement','Signage'],
+    fdefect:['Choked','Cracked surface','Damaged','Depression','Faded','Hole','Missing','No stopping sign','Uneven surface'],
+    fassign:['Common Queue','DEV CO01','DEV CO02','DEV PATHTR388SS01','DEV TR388DRC01','DEV TR388ENG01','DEV TR388SS01'],
+    froad:['Adis Road','Admiralty Drive','Admiralty Lane','Alexandra Road','Anson Road','Balestier Road','Bencoolen Street','Bukit Merah Central','Bukit Timah Road','Changi Road','Clementi Road','Commonwealth Avenue','Dunearn Road','Eu Tong Sen Street','Farrer Road','Geylang Road','Havelock Road','Holland Road','Jalan Bukit Merah','Jalan Eunos','Keppel Road','Lornie Road','Marina Boulevard','Newton Road','Nicoll Highway','Orchard Road','Palm Drive','Paya Lebar Road','Queensway','River Valley Road','Serangoon Road','Sims Avenue','Tampines Avenue 1','Thomson Road','Tiong Bahru Road','Upper Bukit Timah Road','Victoria Street','West Coast Road','Yio Chu Kang Road','Yishun Avenue 2']
+  };
+
+  // Resolve a sibling page for whatever host we're on. Under htmlpreview the real
+  // source URL lives in the query string, so a bare relative path would 404.
+  function siblingUrl(file){
+    var q=location.search.replace(/^\?/,'');
+    if(/^https?:\/\//.test(q)) return location.origin+'/?'+q.replace(/[^\/]*$/,file);
+    return file;
+  }
+  function role(){
+    // body.dataset.role is the live value; the URL param only seeds the first load,
+    // and is unavailable when the page is served through htmlpreview
+    var d=document.body.dataset.role;
+    if(d) return d;
+    var m=/[?&]role=(co|ss|eng)/.exec(location.search);return m?m[1]:'co';
+  }
+  function txt(el){return el?el.textContent.trim():'';}
+  function pDate(s){if(!s||/not set/i.test(s))return Infinity;var m=s.match(/(\d+)\s+([A-Za-z]+)\s+(\d+)/);if(!m)return Infinity;var mo={Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11}[m[2].slice(0,3)];return new Date(+m[3],mo,+m[1]).getTime();}
+  var DAY=864e5;
+  function today(){var d=new Date();return new Date(d.getFullYear(),d.getMonth(),d.getDate()).getTime();}
+
+  var rows=[].slice.call(document.querySelectorAll('.wi-table tbody tr.row-link'));
+  var cards=[].slice.call(document.querySelectorAll('.wi-cards .wi-card'));
+  var tbody=document.querySelector('.wi-table tbody'),ul=document.querySelector('.wi-cards'),table=document.querySelector('.wi-table');
+  var cardBy={};
+
+  function readRow(el,get){
+    var wi=get.wi(el);var m=META[wi]||{st:'draft',a:false};
+    el.dataset.wi=wi;
+    var road=get.road(el),sub=get.sub(el);
+    var mm=sub.match(/Sector\s+([A-Za-z0-9]+)\s*·\s*([A-Za-z0-9]+)/)||[];
+    var asset=get.asset(el);if(/not selected/i.test(asset)||!asset)asset='—';
+    var elem=get.elem(el);if(!elem||asset==='—')elem='—';
+    var def=get.def(el);if(!def||/not set/i.test(def))def='—';
+    el.dataset.fstatus=m.st;
+    el.dataset.fsector=mm[1]||'';
+    el.dataset.fsub=mm[2]||'';
+    el.dataset.fdept=el.dataset.dept||'';
+    el.dataset.fworktype=get.wt(el);
+    el.dataset.fasset=asset;
+    el.dataset.felement=elem;
+    el.dataset.fdefect=def;
+    el.dataset.froad=road;
+    el.dataset.fest=pDate(get.est(el));
+    el.dataset.fupd=pDate(get.upd(el));
+    el.dataset.finst=pDate(el.dataset.inst||'');
+    el.dataset.q=(wi+' '+road+' '+sub+' '+asset+' '+elem+' '+def+' '+el.dataset.fworktype).toLowerCase();
+    var c=el.querySelector('.chip');
+    if(c){c.className='chip chip-sm st-'+m.st;c.title=LABEL[m.st];
+      c.innerHTML='<span class="chip-full"></span><span class="chip-abbr"></span>';
+      // textContent, not innerHTML: "Approved & closed" would need escaping
+      c.firstChild.textContent=LABEL[m.st];c.lastChild.textContent=ABBR[m.st];}
+  }
+
+  rows.forEach(function(tr,i){
+    tr._i=i;var t=tr.children;
+    readRow(tr,{wi:function(e){return txt(e.querySelector('.wi-num'));},
+      road:function(){return txt(t[2].querySelector('.cell-main'));},
+      sub:function(){return txt(t[2].querySelector('.cell-sub'));},
+      asset:function(){return txt(t[3].querySelector('.cell-main'))||txt(t[3]);},
+      elem:function(){return txt(t[3].querySelector('.cell-sub'));},
+      def:function(){return txt(t[4]);},wt:function(){return txt(t[5]);},
+      est:function(){return txt(t[6]);},upd:function(){return txt(t[8]);}});
+    var td=document.createElement('td');td.className='act-col act-cell';tr.appendChild(td);
+  });
+  cards.forEach(function(c,i){
+    c._i=i;
+    readRow(c,{wi:function(e){return txt(e.querySelector('.num'));},
+      road:function(e){var a=e.querySelector('[data-f="road"] strong');return a?txt(a):'';},
+      sub:function(e){var d=e.querySelector('[data-f="road"] dd');return d?txt(d).replace(/^[^·]*·\s*/,''):'';},
+      asset:function(e){var a=e.querySelector('[data-f="asset"] strong');return a?txt(a):'';},
+      elem:function(e){var d=e.querySelector('[data-f="asset"] dd');return d?txt(d).replace(/^[^·]*·\s*/,''):'';},
+      def:function(e){var d=e.querySelector('.m-def');return d?(d.dataset.def||''):'';},
+      wt:function(e){return txt(e.querySelector('[data-f="wt"] dd'));},
+      est:function(e){return txt(e.querySelector('[data-f="est"] b'));},
+      upd:function(e){return txt(e.querySelector('[data-f="upd"] b'));}});
+    if((META[c.dataset.wi]||{}).st==='draft')c.setAttribute('href',siblingUrl('mwi-draft.html'));
+    cardBy[c.dataset.wi]=c;
+  });
+
+  // ---- facets --------------------------------------------------------------
+  var CATS=[
+    {k:'fstatus',label:'Status',opts:SORD.slice(),disp:function(v){return LABEL[v];}},
+    {k:'froad',label:'Road'},
+    {k:'fsector',label:'Sector',child:true},
+    {k:'fsub',label:'Sub-sector',parent:'fsector',child:true},
+    {k:'fasset',label:'Asset'},
+    {k:'felement',label:'Element type',parent:'fasset',child:true},
+    {k:'fdefect',label:'Defect type'},
+    {k:'fworktype',label:'Work type'},
+    {k:'fassign',label:'Assign to'},
+    {k:'fdept',label:'Department'}
+  ];
+  var DATES=[
+    {k:'fest',label:'Est. completion',pills:[['overdue','Overdue'],['n7','Next 7 days'],['n30','Next 30 days']]},
+    {k:'finst',label:'Instruction date',pills:[['p7','Last 7 days'],['p30','Last 30 days'],['p90','Last 90 days']]}
+  ];
+  // One section per table column, in the same left-to-right order. Sector / Sub-sector /
+  // Element type are indented under the column whose cell they appear in.
+  // HIDDEN FOR NOW: Department and Instruction date have no column in the table, so the
+  // "Other filters" group is left out. To bring them back, append to ORDER:
+  //   '__other','fdept','finst'
+  var ORDER=['fstatus','froad','fsector','fsub','fasset','felement','fdefect','fworktype','fest','fassign'];
+  // ORDER is the source of truth — anything not listed is never built, filtered or counted.
+  CATS=CATS.filter(function(c){return ORDER.indexOf(c.k)>=0;});
+  DATES=DATES.filter(function(d){return ORDER.indexOf(d.k)>=0;});
+  CATS.forEach(function(c){if(!c.opts)c.opts=(VOCAB[c.k]||[]).slice();if(!c.disp)c.disp=function(v){return v;};});
+  // "—" (nothing set) is in the data but not in the contract dictionary, so without this
+  // the domain is incomplete: ticking every option quietly drops those rows and "select
+  // all" ends up NARROWER than "select none". It is also worth filtering for in its own
+  // right — the form has an explicit "Asset not found" toggle.
+  var NOTSET='\u2014';
+  ['fasset','felement','fdefect'].forEach(function(k){
+    var c=CATS.filter(function(x){return x.k===k;})[0];if(!c)return;
+    var used=rows.some(function(tr){return tr.dataset[k]===NOTSET;});
+    if(used&&c.opts.indexOf(NOTSET)<0)c.opts.push(NOTSET);
+    c.disp=function(v){return v===NOTSET?'Not set':v;};
+  });
+  // parent → children, learned from the data (a sector only offers its own sub-sectors)
+  var PMAP={};
+  CATS.filter(function(c){return c.parent;}).forEach(function(c){
+    PMAP[c.k]={};
+    rows.forEach(function(tr){var p=tr.dataset[c.parent],v=tr.dataset[c.k];
+      if(!p||!v)return;(PMAP[c.k][p]=PMAP[c.k][p]||[]);
+      if(PMAP[c.k][p].indexOf(v)<0)PMAP[c.k][p].push(v);});
+  });
+
+  var PAGE_SIZE=10,PAGE=1;
+  var FILT={},DFILT={},cur='todo',QRY='';
+  var DEFDIR={fest:1,fupd:-1},SORT={k:'fupd',dir:-1};
+  /* "All" is the resting state, not "nothing". Every option ticked excludes nothing,
+     so this filters exactly like the old empty default — but the drawer now says so,
+     and Clear only has work to do once something has been unticked. */
+  CATS.forEach(function(c){FILT[c.k]=c.opts.slice();});
+  DATES.forEach(function(d){DFILT[d.k]={pill:'',from:'',to:''};});
+
+  // ---- drawer --------------------------------------------------------------
+  var bd=document.createElement('div');bd.className='filter-bd';
+  bd.innerHTML='<div class="filter-drawer"><div class="fd-head"><h2>Filter &amp; sort</h2><button class="fd-close" aria-label="Close">✕</button></div><div class="fd-body"></div><div class="fd-foot"><button class="clear">Reset all</button><button class="btn btn-primary apply">Apply</button></div></div>';
+  document.body.appendChild(bd);
+  var body=bd.querySelector('.fd-body');
+
+  function pending(k){return [].slice.call(body.querySelectorAll('.fd-chip[data-cat="'+k+'"].on')).map(function(x){return x.dataset.val;});}
+  function optsFor(cat){
+    if(cat.parent){
+      var sel=pending(cat.parent);
+      if(sel.length){var out=[];sel.forEach(function(p){(PMAP[cat.k][p]||[]).forEach(function(v){if(out.indexOf(v)<0)out.push(v);});});return out.sort();}
+    }
+    return cat.opts.slice();
+  }
+  var SHOW=6;
+  function paintOpts(cat){
+    var on=cat._on||[],list=optsFor(cat),q=(cat._q||'').toLowerCase();
+    var shown=list.filter(function(v){return !q||cat.disp(v).toLowerCase().indexOf(q)>=0;});
+    var hidden=0;
+    if(!cat._all&&!q&&shown.length>SHOW){hidden=shown.length-SHOW;shown=shown.slice(0,SHOW);}
+    cat._chips.innerHTML='';
+    // no data-cat on this one: pending() and the delegated chip handler must skip it
+    cat._allChip=document.createElement('button');cat._allChip.type='button';
+    cat._allChip.className='fd-chip fd-all';cat._allChip.textContent='All';
+    cat._allChip.addEventListener('click',function(){
+      cat._on=coversAll(cat._on,optsFor(cat))?[]:optsFor(cat).slice();
+      paintOpts(cat);syncChildren(cat.k);});
+    cat._chips.appendChild(cat._allChip);
+    shown.forEach(function(v){
+      var b=document.createElement('button');b.type='button';b.className='fd-chip'+(on.indexOf(v)>=0?' on':'');
+      b.dataset.cat=cat.k;b.dataset.val=v;b.textContent=cat.disp(v);
+      if(cat.k==='fstatus')b.classList.add('st-'+v);
+      cat._chips.appendChild(b);});
+    if(!shown.length){var e=document.createElement('span');e.className='fd-none';e.textContent='No match';cat._chips.appendChild(e);}
+    cat._more.textContent=hidden?('Show all ('+list.length+')'):(cat._all&&list.length>SHOW?'Show less':'');
+    cat._more.style.display=(hidden||(cat._all&&list.length>SHOW))?'':'none';
+    refreshHead(cat);
+  }
+  // badge / Clear / All-pill state, without re-sorting the chips under the cursor
+  function refreshHead(cat){
+    var on=cat._on||[],all=coversAll(on,optsFor(cat));
+    if(cat._cnt){cat._cnt.textContent=all?'All':on.length;
+      cat._cnt.classList.toggle('all',all);
+      cat._cnt.style.display='';}            // 0 ticked is a real state now, show it
+    if(cat._clr)cat._clr.disabled=all;      // nothing has been unticked yet
+    if(cat._allChip)cat._allChip.classList.toggle('on',all);
+  }
+  function syncChildren(parentKey){
+    CATS.forEach(function(c){if(c.parent===parentKey){
+      c._on=c._on.filter(function(v){return optsFor(c).indexOf(v)>=0;});paintOpts(c);}});
+  }
+  function buildCat(cat){
+    cat._on=cat.opts.slice();
+    var sec=document.createElement('div');sec.className='fd-sec'+(cat.child?' child':'');
+    var acc=document.createElement('button');acc.className='fd-acc';acc.type='button';
+    acc.setAttribute('aria-expanded','false');
+    acc.innerHTML='<span class="l">'+cat.label+' <span class="cnt" style="display:none">0</span></span>';   // chevron lives in .chev-slot now
+    var pane=document.createElement('div');pane.className='fd-opts';
+    if(cat.opts.length>8){
+      var s=document.createElement('input');s.type='search';s.className='fd-search';s.placeholder='Search '+cat.label.toLowerCase()+'…';
+      s.addEventListener('input',function(){cat._q=s.value;paintOpts(cat);});
+      pane.appendChild(s);
+    }
+    cat._chips=document.createElement('div');cat._chips.className='fd-chips';pane.appendChild(cat._chips);
+    cat._more=document.createElement('button');cat._more.type='button';cat._more.className='fd-more';
+    cat._more.addEventListener('click',function(){cat._all=!cat._all;paintOpts(cat);});
+    pane.appendChild(cat._more);
+    var hd=document.createElement('div');hd.className='fd-hd';
+    cat._clr=document.createElement('button');cat._clr.type='button';cat._clr.className='fd-clear';
+    cat._clr.textContent='Reset';cat._clr.disabled=true;
+    var chv=document.createElement('span');chv.className='chev-slot';chv.setAttribute('aria-hidden','true');
+    chv.innerHTML='<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>';
+    hd.appendChild(acc);hd.appendChild(cat._clr);hd.appendChild(chv);
+    hd.addEventListener('click',function(){var o=sec.classList.toggle('open');acc.setAttribute('aria-expanded',o?'true':'false');});
+    cat._clr.addEventListener('click',function(e){e.stopPropagation();cat._on=optsFor(cat).slice();paintOpts(cat);syncChildren(cat.k);});
+    sec.appendChild(hd);sec.appendChild(pane);body.appendChild(sec);
+    cat._cnt=acc.querySelector('.cnt');
+    paintOpts(cat);
+  }
+  function buildDate(d){
+    var sec=document.createElement('div');sec.className='fd-sec';
+    var acc=document.createElement('button');acc.className='fd-acc';acc.type='button';
+    acc.innerHTML='<span class="l">'+d.label+' <span class="cnt" style="display:none">0</span></span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>';
+    var pane=document.createElement('div');pane.className='fd-opts';
+    var pills=document.createElement('div');pills.className='fd-chips';
+    d.pills.forEach(function(p){var b=document.createElement('button');b.type='button';b.className='fd-chip';b.dataset.pill=p[0];b.textContent=p[1];pills.appendChild(b);});
+    pane.appendChild(pills);
+    var rg=document.createElement('div');rg.className='fd-range';
+    rg.innerHTML='<input type="date" class="d-from" aria-label="'+d.label+' from"><span class="sep">→</span><input type="date" class="d-to" aria-label="'+d.label+' to">';
+    pane.appendChild(rg);
+    pills.addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;
+      var was=b.classList.contains('on');
+      pills.querySelectorAll('button').forEach(function(x){x.classList.remove('on');});
+      if(!was)b.classList.add('on');
+      rg.querySelector('.d-from').value='';rg.querySelector('.d-to').value='';mark();});
+    rg.addEventListener('input',function(){pills.querySelectorAll('button').forEach(function(x){x.classList.remove('on');});mark();});
+    function mark(){var n=(pills.querySelector('button.on')||rg.querySelector('.d-from').value||rg.querySelector('.d-to').value)?1:0;
+      d._cnt.textContent=n;d._cnt.style.display=n?'':'none';}
+    acc.addEventListener('click',function(){acc.classList.toggle('open');});
+    sec.appendChild(acc);sec.appendChild(pane);body.appendChild(sec);
+    d._cnt=acc.querySelector('.cnt');d._pills=pills;d._rg=rg;d._mark=mark;
+  }
+  ORDER.forEach(function(k){
+    if(k==='__other'){var lb=document.createElement('div');lb.className='fd-grouplbl';
+      lb.innerHTML='Other filters<span class="hint">No matching column in the table</span>';
+      body.appendChild(lb);return;}
+    var c=CATS.filter(function(x){return x.k===k;})[0];if(c)return buildCat(c);
+    var d=DATES.filter(function(x){return x.k===k;})[0];if(d)return buildDate(d);
+  });
+
+  // ---- sorting: the table header is the control; the drawer keeps a mobile fallback ----
+  var sortBtns=[].slice.call(document.querySelectorAll('.wi-table thead th button[data-sk]'));
+  var sw=document.createElement('div');sw.className='fd-sort';
+  sw.innerHTML='<span class="fd-label">Sort by</span><div class="sortpills">'+sortBtns.map(function(b){
+    return '<button data-sort="'+b.dataset.sk+'">'+b.textContent.trim()+' <span class="dir"></span></button>';}).join('')+'</div>';
+  body.insertBefore(sw,body.firstChild);
+  function paintSort(){
+    sortBtns.forEach(function(b){var on=b.dataset.sk===SORT.k;
+      b.classList.toggle('sorted',on);
+      b.classList.toggle('asc',on&&SORT.dir>0);
+      b.classList.toggle('desc',on&&SORT.dir<0);
+      var th=b.closest('th');if(th)th.setAttribute('aria-sort',on?(SORT.dir>0?'ascending':'descending'):'none');});
+    sw.querySelectorAll('button[data-sort]').forEach(function(b){var on=b.dataset.sort===SORT.k;
+      b.classList.toggle('on',on);b.querySelector('.dir').textContent=on?(SORT.dir>0?'↑':'↓'):'';});
+  }
+  function setSort(k){
+    if(SORT.k===k)SORT.dir=-SORT.dir;else SORT={k:k,dir:DEFDIR[k]||1};
+    PAGE=1;paintSort();render();
+  }
+  sortBtns.forEach(function(b){b.addEventListener('click',function(){setSort(b.dataset.sk);});});
+  sw.addEventListener('click',function(e){var b=e.target.closest('button[data-sort]');if(b)setSort(b.dataset.sort);});
+
+  body.addEventListener('click',function(e){
+    var b=e.target.closest('.fd-chip[data-cat]');if(!b)return;
+    var cat=CATS.filter(function(c){return c.k===b.dataset.cat;})[0];if(!cat)return;
+    var v=b.dataset.val,i=cat._on.indexOf(v);
+    if(i<0)cat._on.push(v);else cat._on.splice(i,1);
+    b.classList.toggle('on');
+    refreshHead(cat);
+    syncChildren(cat.k);
+  });
+  bd.querySelector('.fd-close').addEventListener('click',function(){bd.classList.remove('show');});
+  bd.addEventListener('click',function(e){if(e.target===bd)bd.classList.remove('show');});
+  function resetDrawer(){
+    CATS.forEach(function(c){c._on=c.opts.slice();c._q='';c._all=false;paintOpts(c);});
+    DATES.forEach(function(d){d._pills.querySelectorAll('button').forEach(function(x){x.classList.remove('on');});
+      d._rg.querySelector('.d-from').value='';d._rg.querySelector('.d-to').value='';d._mark();});
+  }
+  bd.querySelector('.clear').addEventListener('click',function(){resetDrawer();});
+  bd.querySelector('.apply').addEventListener('click',function(){
+    CATS.forEach(function(c){FILT[c.k]=c._on.slice();});
+    DATES.forEach(function(d){var p=d._pills.querySelector('button.on');
+      DFILT[d.k]={pill:p?p.dataset.pill:'',from:d._rg.querySelector('.d-from').value,to:d._rg.querySelector('.d-to').value};});
+    bd.classList.remove('show');PAGE=1;render();});
+
+  // Filter button + toolbar search
+  var fbtn=document.getElementById('btnFilter');
+  var flabel;if(fbtn){flabel=document.createElement('span');flabel.className='fcount';fbtn.appendChild(flabel);
+    fbtn.addEventListener('click',function(){bd.classList.add('show');});}
+  var sbox=document.querySelector('.list-toolbar .search-box input');
+  if(sbox)sbox.addEventListener('input',function(){QRY=sbox.value.trim().toLowerCase();PAGE=1;render();});
+  var cf=document.createElement('button');cf.className='clear-filters';cf.textContent='Reset filters';
+  var tb=document.querySelector('.list-toolbar');if(tb)tb.appendChild(cf);
+  cf.addEventListener('click',function(){CATS.forEach(function(c){FILT[c.k]=c.opts.slice();});
+    DATES.forEach(function(d){DFILT[d.k]={pill:'',from:'',to:''};});resetDrawer();PAGE=1;render();});
+
+  function dateOk(k,ts){
+    var f=DFILT[k];if(!f.pill&&!f.from&&!f.to)return true;
+    if(!isFinite(ts))return false;
+    var t0=today();
+    if(f.pill==='p7')return ts>=t0-7*DAY&&ts<=t0;
+    if(f.pill==='p30')return ts>=t0-30*DAY&&ts<=t0;
+    if(f.pill==='p90')return ts>=t0-90*DAY&&ts<=t0;
+    if(f.pill==='overdue')return ts<t0;
+    if(f.pill==='n7')return ts>=t0&&ts<=t0+7*DAY;
+    if(f.pill==='n30')return ts>=t0&&ts<=t0+30*DAY;
+    if(f.from&&ts<new Date(f.from+'T00:00:00').getTime())return false;
+    if(f.to&&ts>new Date(f.to+'T23:59:59').getTime())return false;
+    return true;
+  }
+  function passF(el){
+    for(var i=0;i<CATS.length;i++){var k=CATS[i].k;
+      // no ticks at all is not "no filter" any more — the drawer shows every box
+      // empty, so the honest result is an empty list
+      if(FILT[k].indexOf(el.dataset[k])<0)return false;}
+    for(var j=0;j<DATES.length;j++){if(!dateOk(DATES[j].k,+el.dataset[DATES[j].k]))return false;}
+    return true;
+  }
+  function passQ(el){return !QRY||el.dataset.q.indexOf(QRY)>=0;}
+  // the options a facet actually offers right now — narrowed by its parent, if any
+  function domainOf(cat){
+    if(cat.parent&&FILT[cat.parent]&&FILT[cat.parent].length){
+      var out=[];FILT[cat.parent].forEach(function(p){(PMAP[cat.k][p]||[]).forEach(function(v){if(out.indexOf(v)<0)out.push(v);});});
+      return out;
+    }
+    return cat.opts;
+  }
+  function coversAll(sel,dom){
+    return dom.length>0&&sel.length>=dom.length&&dom.every(function(v){return sel.indexOf(v)>=0;});
+  }
+  // every option ticked excludes nothing, so it must not read as an applied filter
+  function fcount(){var n=0;CATS.forEach(function(c){var sel=FILT[c.k];
+    if(coversAll(sel,domainOf(c)))return;
+    n+=sel.length||1;});   // 0 ticked excludes everything, so it counts as a constraint
+    DATES.forEach(function(d){var f=DFILT[d.k];if(f.pill||f.from||f.to)n++;});return n;}
+  function cmp(x,y){
+    var k=SORT.k,d=SORT.dir;
+    if(k==='wi')return d*String(x.dataset.wi).localeCompare(String(y.dataset.wi),undefined,{numeric:true})||x._i-y._i;
+    if(k==='fstatus')return d*(SORD.indexOf(x.dataset.fstatus)-SORD.indexOf(y.dataset.fstatus))||x._i-y._i;
+    if(k==='fest'||k==='fupd'||k==='finst'){
+      var a=+x.dataset[k],b=+y.dataset[k];
+      if(isFinite(a)!==isFinite(b))return isFinite(a)?-1:1;   // unset rows sink, either direction
+      if(!isFinite(a))return x._i-y._i;
+      return d*(a-b)||x._i-y._i;
+    }
+    var s=x.dataset[k]||'',t=y.dataset[k]||'';
+    if((s==='—')!==(t==='—'))return s==='—'?1:-1;             // "—" sinks, either direction
+    return d*s.localeCompare(t)||x._i-y._i;
+  }
+  function srt(arr){var a=arr.slice();a.sort(cmp);return a;}
+  function toast(msg){var el=document.getElementById('toast');el.innerHTML='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4L19 7"/></svg>'+msg;el.classList.add('show');clearTimeout(el._t);el._t=setTimeout(function(){el.classList.remove('show');},2400);}
+
+  // ---- role-aware buckets: bucket = f(current role, WI stage) ----
+  function ownerOf(st){return st==='draft'?'co':st==='wip'?'ss':st==='ver'?'eng':st==='appr'?'co':null;}
+  var ACT={co:[0,3],ss:[1],eng:[2]},SIDX={draft:0,wip:1,ver:2,appr:3,closed:4};
+  function bucketFor(r,wi){var m=META[wi]||{st:'draft',a:false};var si=SIDX[m.st];
+    if(ownerOf(m.st)===r)return m.a?'todo':'inprogress';
+    var acts=ACT[r]||[];for(var i=0;i<acts.length;i++){if(acts[i]<si)return 'submitted';}return null;}
+  function bkt(el){return bucketFor(curR,el.dataset.wi);}
+  function assign(wi){if(META[wi]){META[wi].a=true;META[wi].who=ME[curR]||ME.co;}toast('Work instruction assigned to you');render();}
+  function asgOf(wi){var m=META[wi]||{};return m.who||'Common Queue';}
+  function asgHtml(wi){var m=META[wi]||{};if(!m.who)return '<span class="asg"><span class="queue">Common Queue</span></span>';
+    return '<span class="asg"><span class="who'+(m.who===ME[curR]?' me':'')+'">'+m.who+'</span></span>';}
+
+  var pager=document.querySelector('.pager');
+  function paintPager(total,pages){
+    if(!pager)return;
+    pager.hidden=total<=PAGE_SIZE;
+    var info=pager.querySelector('.info');
+    if(info)info.textContent=total?((PAGE-1)*PAGE_SIZE+1)+'–'+Math.min(PAGE*PAGE_SIZE,total)+' of '+total:'0 of 0';
+    var box=pager.querySelector('.pages');if(!box)return;box.innerHTML='';
+    function btn(label,p,dis,cls){var b=document.createElement('button');b.className='page-btn'+(cls?' '+cls:'');
+      b.textContent=label;if(dis)b.disabled=true;
+      b.addEventListener('click',function(){PAGE=p;render();window.scrollTo({top:0,behavior:'smooth'});});return b;}
+    box.appendChild(btn('‹',PAGE-1,PAGE<=1));
+    for(var i=1;i<=pages;i++)box.appendChild(btn(String(i),i,false,i===PAGE?'current':''));
+    box.appendChild(btn('›',PAGE+1,PAGE>=pages));
+  }
+
+  function render(){
+    rows.forEach(function(tr){tr.dataset.fassign=asgOf(tr.dataset.wi);
+      var ac=tr.querySelector('.asg-cell');if(ac)ac.innerHTML=asgHtml(tr.dataset.wi);});
+    cards.forEach(function(c){c.dataset.fassign=asgOf(c.dataset.wi);
+      var ac=c.querySelector('.cf-asg');if(ac)ac.innerHTML=asgHtml(c.dataset.wi);});
+
+    var list=srt(rows).filter(function(tr){return bkt(tr)===cur&&passF(tr)&&passQ(tr);});
+    var pages=Math.max(1,Math.ceil(list.length/PAGE_SIZE));
+    if(PAGE>pages)PAGE=pages;
+    var page=list.slice((PAGE-1)*PAGE_SIZE,PAGE*PAGE_SIZE);
+    var wis=page.map(function(tr){return tr.dataset.wi;});
+
+    rows.forEach(function(tr){var show=wis.indexOf(tr.dataset.wi)>=0;tr.style.display=show?'':'none';
+      var td=tr.querySelector('.act-cell');if(td){td.innerHTML='';
+        if(cur==='inprogress'&&show){var b=document.createElement('button');b.className='btn-assign';b.type='button';b.textContent='Assign to self';
+          b.addEventListener('click',function(e){e.stopPropagation();assign(tr.dataset.wi);});td.appendChild(b);}}});
+    // stripe by visible position, after the page has been re-ordered
+    page.forEach(function(tr,i){tbody.appendChild(tr);tr.classList.toggle('zebra',i%2===1);});
+    cards.forEach(function(c){var show=wis.indexOf(c.dataset.wi)>=0;c.parentNode.style.display=show?'':'none';
+      var ex=c.querySelector('.card-assign');if(ex)ex.remove();
+      if(cur==='inprogress'&&show){var d=document.createElement('div');d.className='card-assign';
+        var b=document.createElement('button');b.className='btn-assign';b.type='button';b.textContent='Assign to self';
+        b.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();assign(c.dataset.wi);});d.appendChild(b);
+        (c.querySelector('.wc-grid')||c).appendChild(d);}});
+    wis.forEach(function(w){var c=cardBy[w];if(c)ul.appendChild(c.parentNode);});
+
+    table.classList.toggle('show-act',cur==='inprogress');
+    var cnt={todo:0,inprogress:0,submitted:0};rows.forEach(function(tr){var b=bkt(tr);if(b&&cnt[b]!=null)cnt[b]++;});
+    document.getElementById('c-todo').textContent=cnt.todo;
+    document.getElementById('c-inprogress').textContent=cnt.inprogress;
+    document.getElementById('c-submitted').textContent=cnt.submitted;
+    paintPager(list.length,pages);
+    var n=fcount();
+    if(fbtn){fbtn.classList.toggle('has-filters',!!n);flabel.textContent=n||'';
+      fbtn.title=n?('Filter · '+n+' applied'):'Filter';fbtn.setAttribute('aria-label',fbtn.title);}
+    // '' falls back to the stylesheet, and the base rule is display:none — so the
+    // button could never appear. Set the shown value explicitly.
+    cf.style.display=(n||QRY)?'inline-block':'none';
+    document.querySelectorAll('.wi-tab').forEach(function(t){t.classList.toggle('active',t.dataset.bucket===cur);});
+  }
+  document.querySelectorAll('.wi-tab').forEach(function(t){t.addEventListener('click',function(){cur=t.dataset.bucket;PAGE=1;render();});});
+
+  // skeleton loading on role switch (simulates the per-role data reload)
+  var tableWrap=document.querySelector('.table-wrap'),cardsWrap=document.querySelector('.wi-cards');
+  var skel=document.createElement('div');skel.className='wi-skel';
+  var srh='';for(var si=0;si<6;si++){srh+='<div class="skel-row"><span class="skel-bar" style="width:17%"></span><span class="skel-bar sk-pill"></span><span class="skel-bar" style="width:12%"></span><span class="skel-bar" style="width:9%"></span><span class="skel-bar" style="width:9%"></span><span class="skel-bar" style="width:13%"></span><span class="skel-bar" style="width:9%"></span><span class="skel-bar" style="width:11%"></span></div>';}
+  skel.innerHTML=srh;
+  if(tableWrap&&tableWrap.parentNode)tableWrap.parentNode.insertBefore(skel,tableWrap);
+  var curR=role();
+  function syncNewWI(){var nw=document.querySelector('.head-actions .btn');if(nw)nw.style.display=(curR==='co')?'':'none';}
+  function reloadForRole(){
+    skel.classList.add('show');
+    if(tableWrap)tableWrap.style.display='none';
+    if(cardsWrap)cardsWrap.style.display='none';
+    setTimeout(function(){
+      curR=role();cur='todo';PAGE=1;render();syncNewWI();
+      skel.classList.remove('show');
+      if(tableWrap)tableWrap.style.display='';
+      if(cardsWrap)cardsWrap.style.display='';
+    },620);
+  }
+  document.querySelectorAll('.rolesw-opt').forEach(function(o){o.addEventListener('click',function(){reloadForRole();});});
+  syncNewWI();paintSort();render();
+})();
+</script>
+<script>
+document.getElementById('navToggle').addEventListener('click',function(){document.body.classList.toggle('nav-collapsed');});
+</script>
+<script src="navigation.js"></script>
+<script src="sidebar.js"></script>
+</body>
+</html>
