@@ -11,7 +11,7 @@
 
 ## 開啟方式
 
-開啟 [index.html](index.html) 直接進入 Overview，從側欄 Work instruction 前往 WI 列表。也可直接開啟 [Maintenance WI](mwi-list.html)。Overview 使用 Tailwind CDN，需要網路；其餘樣式、腳本與 logo 已放在本資料夾。
+開啟 [index.html](index.html) 直接進入 Overview，從側欄 Work instruction 前往 WI 列表。也可直接開啟 [Maintenance WI](mwi-list.html)。Overview 已改用本機 assets/overview.css；所有頁面的樣式、腳本與圖片都在本資料夾內，無須載入外部 CDN。
 
 若需要本機網址，在此資料夾執行 `python3 -m http.server 8765`，再開啟 `http://localhost:8765`。
 
@@ -79,3 +79,9 @@ WI 頁面依功能命名為 list、create、draft 與 workflow。所有頁面的
 ## 登入第二版：中央透視
 
 [login-perspective.html](login-perspective.html)：中央登入卡片，左側軌道、右側道路共用遠方消失點，車輛由遠及近前進。登入沿用 index.html 導覽，第一版 login.html 保留。第二版樣式 login-perspective.css、場景 login-perspective.js；重新打包指令為 `npx --yes esbuild@0.25.10 "LTA 2.0/login-perspective.js" --bundle --format=iife --minify --outfile="LTA 2.0/login-perspective.bundle.js"`。場景使用示意城市街廓，非特定實際道路。
+
+## 獨立部署
+
+請完整上傳本資料夾，保持 HTML、CSS、JS 與 assets 的相對位置，不要只複製 HTML。若 GitHub Pages 發佈儲存庫根目錄，入口路徑為 `/LTA/LTA%202.0/index.html`；若部署平台以 LTA 2.0 為網站根目錄，入口為 `/index.html`。GitHub 檔案預覽不是網站執行頁。
+
+Overview 樣式原始檔為 `styles/overview.input.css`，修改後在本資料夾執行 `npm ci` 及 `npm run build:css`，提交產生的 `assets/overview.css`。一般瀏覽與部署不需要安裝 Node 或 node_modules。

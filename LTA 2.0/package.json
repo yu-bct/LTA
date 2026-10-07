@@ -1,0 +1,11 @@
+{
+  "name": "lta-2-demo",
+  "private": true,
+  "scripts": {
+    "build:css": "tailwindcss -i ./styles/overview.input.css -o ./assets/overview.css --minify"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "4.1.13",
+    "tailwindcss": "4.1.13"
+  }
+}

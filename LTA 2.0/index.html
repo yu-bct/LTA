@@ -3,31 +3,8 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Overview Dashboard · RMWP</title>
-<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-<style type="text/tailwindcss">
-@theme {
- --color-brand-50:#E9F5F5; --color-brand-100:#CDE9E9; --color-brand-200:#A3D7D8; --color-brand-600:#00747A; --color-brand-700:#005F64; --color-brand-900:#0A393C;
- --color-slate-50:#F7F9FA; --color-slate-100:#EFF2F4; --color-slate-200:#E2E7EA; --color-slate-300:#CBD4D9; --color-slate-400:#9DAAB2; --color-slate-500:#6E7E88; --color-slate-600:#51616B; --color-slate-700:#3A4952; --color-slate-800:#27333B; --color-slate-900:#161F26;
- --color-emerald-50:#EAF5EE; --color-emerald-700:#177245; --color-emerald-800:#0F5C37;
- --color-teal-600:#177245; --color-amber-50:#FEF3E2; --color-amber-500:#A15C07; --color-amber-700:#A15C07; --color-amber-800:#7A4506; --color-amber-900:#7A4506;
- --color-rose-50:#F9ECEB; --color-rose-200:#E4BAB6; --color-rose-500:#A93A32; --color-rose-700:#8F2D2B; --color-rose-800:#8F2D2B; --color-rose-900:#8F2D2B;
- --font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
-}
-@layer base { body{@apply bg-slate-50 text-slate-700 text-sm antialiased;} button,summary,select{@apply cursor-pointer;} :focus-visible{@apply outline-2 outline-offset-4 outline-brand-600;} h2{@apply text-base font-semibold text-slate-900;} h3{@apply font-semibold text-slate-900;} }
-@layer components {
-.panel{@apply rounded-xl border border-slate-200 bg-white;}
-.muted{@apply text-xs text-slate-500;}
-.badge{@apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium;}
-.good{@apply bg-emerald-50 text-emerald-800;}
-.warn{@apply bg-amber-50 text-amber-800;}
-.bad{@apply bg-rose-50 text-rose-800;}
-.field{@apply w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700;}
-.jump{@apply whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:bg-brand-50 hover:text-brand-700;}
-.jump[aria-current="location"]{@apply bg-brand-100 text-brand-900;}
-.navitem{@apply flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-600 hover:bg-white/70;}
-.service{@apply rounded-lg border border-slate-200 p-4;}
-}
-</style>
+
+<link rel="stylesheet" href="./assets/overview.css">
 <style>html{scroll-behavior:smooth}section[id]{scroll-margin-top:90px}#main section:last-of-type{margin-bottom:0;margin-block-end:0}summary::-webkit-details-marker{display:none}summary{list-style:none;display:inline-flex;align-items:center;gap:8px}summary .chevron{display:block;width:16px;height:16px;flex:none}details[open] .chevron{transform:rotate(180deg)}dialog::backdrop{background:#17203366}dialog{margin:auto}button,a,summary{touch-action:manipulation}svg{flex-shrink:0} @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}</style>
 <style>
 /* Shell geometry/icons: mwi-list.html. Colour tokens: mwi-list-redesign.html. */
