@@ -2,7 +2,7 @@ import * as THREE from './assets/vendor/three.module.js';
 import {buildCity} from './login-city.js';
 import {buildPeople} from './login-people.js';
 import {trafficAt,carPositionsAt} from './login-traffic.js';
-const host=document.querySelector('#scene'),depart=document.querySelector('#depart'),motion=document.querySelector('#motion'),status=document.querySelector('#scene-status');
+const host=document.querySelector('#scene'),depart=document.querySelector('#depart')||document.createElement('button'),motion=document.querySelector('#motion')||document.createElement('button'),status=document.querySelector('#scene-status');
 try {
 const scene=new THREE.Scene();scene.background=new THREE.Color('#55c9e5');scene.fog=new THREE.Fog('#c8e1e2',65,145);
 const renderer=new THREE.WebGLRenderer({antialias:true,alpha:false});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.1;host.appendChild(renderer.domElement);

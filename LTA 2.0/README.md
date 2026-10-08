@@ -85,3 +85,5 @@ WI 頁面依功能命名為 list、create、draft 與 workflow。所有頁面的
 請完整上傳本資料夾，保持 HTML、CSS、JS 與 assets 的相對位置，不要只複製 HTML。若 GitHub Pages 發佈儲存庫根目錄，入口路徑為 `/LTA/LTA%202.0/index.html`；若部署平台以 LTA 2.0 為網站根目錄，入口為 `/index.html`。GitHub 檔案預覽不是網站執行頁。
 
 Overview 樣式原始檔為 `styles/overview.input.css`，修改後在本資料夾執行 `npm ci` 及 `npm run build:css`，提交產生的 `assets/overview.css`。一般瀏覽與部署不需要安裝 Node 或 node_modules。
+
+2026-10-08：login.html 移除左下控制區及摩天輪前座椅。右側所有導覽改為不跳轉，保留 hover、密碼顯示與勾選互動；Enter 亦不送出或前往 Overview。第二版登入導覽不變。

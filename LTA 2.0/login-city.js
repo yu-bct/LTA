@@ -160,9 +160,11 @@ export function buildCity(scene) {
   }
   for(const t of [.35,.48,.66]){
     const p=shoreCurve.getPoint(t);
+    if(t!==.35){
     box(1.25,.1,.42,p.x,.3,p.z-1.3,bark);
     box(1.25,.35,.06,p.x,.52,p.z-1.5,bark);
     for(let dx of [-.45,.45])box(.055,.43,.3,p.x+dx,.1,p.z-1.3,steel);
+    }
     pole([p.x+1.8,-.15,p.z-1.25],[p.x+1.8,1.4,p.z-1.25],.032,steel);
     ball(p.x+1.8,1.45,p.z-1.25,.12,.07,.12,cream);
   }
